@@ -9,33 +9,56 @@ namespace GExportToKVP
 {
     public class Tree
     {
-        public Tree()
+        public Tree(string neName)
         {
+            this.NE = neName;
             this.Parent = null;
         }
-        public Tree(Tree Parent)
+        public Tree(Tree Parent, string neName)
         {
             this.Parent = Parent;
+            this.NE = neName;
         }
+
+        public string NE { get; set; }
         private Tree Parent;
         public string Name { get; set; }
         public int Level { get; set; }
         public List<Tree> Children = new List<Tree>();
         public override string ToString()
         {
-
             return GetPname();
         }
 
-        private string GetPname()
+        public string ToStringPiMoname()
+        {
+            return GetPiPname();
+        }
+
+        public string GetPname()
         {
             if (this.Parent == null)
                 return this.Name;
             else
-                return Parent.GetPname() + "->" + this.Name;
+                return Parent.GetPname() + "," + this.Name;
         }
 
-        
+        public string GetPiPname()
+        {
+            if (this.Parent == null)
+                return "NE=" + NE + "→" + this.Name;
+            else
+                return Parent.GetPiPname() + "→" + this.Name;
+        }
+
+        public string Getmotype()
+        {
+            if (this.Parent == null)
+                return this.Name;
+            else
+                return Parent.Getmotype() + "," + this.Name.Split('=')[0];
+        }
+
     }
 
     public static class Extentions

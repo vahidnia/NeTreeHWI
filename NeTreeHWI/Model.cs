@@ -8,7 +8,7 @@ namespace GExportToKVP
 {
     public class Model
     {
-
+        public Tree ModelTree { get; set; }
         public Model()
         {
             Mocs = new List<Moc>();

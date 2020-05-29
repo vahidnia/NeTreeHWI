@@ -9,8 +9,12 @@ namespace GExportToKVP
 {
     internal static class GExportToKVPConverter
     {
-        public static void Convert(Stream xmlStream, string dbFilePath, string ne, bool removeClassNameSuffix, StreamWriter streamWriter, Dictionary<string, Dictionary<string, int>> columnIndices, Model model, Tree tree)
+        public static void Convert(Stream xmlStream, string dbFilePath, string ne, bool removeClassNameSuffix, List<StreamWriter> streamWriter, Dictionary<string, Dictionary<string, int>> columnIndices, Dictionary<string, Model> model)
         {
+            Dictionary<string, int> pimonameDic = new Dictionary<string, int>();
+            string fileDate = "2020-04-06 06:00:00";
+            var ossid = 46; //HAVA
+
 
             XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
             {
@@ -26,6 +30,9 @@ namespace GExportToKVP
                 xmlReader.ReadToDescendant("class");
                 xmlReader.ReadToDescendant("object"); // TODO: extract 'technique'?
                 xmlReader.ReadToDescendant("class");
+
+
+
                 while (string.Equals(xmlReader.Name, "class", StringComparison.Ordinal))
                 {
                     string className = xmlReader.GetAttribute("name");
@@ -71,53 +78,81 @@ namespace GExportToKVP
                             }
                             if (parameters.Count > 1) // > 1 because NE is always there
                             {
+
+                                string omcName = "NA";
+                                string neName = "NA";
+
+
                                 foreach (KeyValuePair<string, string> parameter in parameters)
                                 {
-
-                                    var fileDateTime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
-                                    var ossid = -1;
-                                    string omcName = "";
-                                    string neName = "";
-                                    string neType = "NA";
+                                    string vsmoname = "NA";
                                     Boolean key = false;
-                                    var KeyAtt = model.Mocs.FirstOrDefault(a => a.KeyAttributes.Any(b => b.NeName == parameter.Key));
-                                    var NoKeyAtt = model.Mocs.FirstOrDefault(a => a.NorAttributes.Any(b => b.NeName == parameter.Key));
-                                    if (KeyAtt != null)
+                                    string pimoname = "NA";
+                                    string motype = "NA";
+
+
+                                    foreach (var item in model.Keys.Where(a => a.Contains("OSS_BTS3900_MATCH_ENG_V300R019C10SPC210")))
                                     {
-                                        neName = KeyAtt.NeName;
-                                        omcName = KeyAtt.OMCName;
-                                        key = true;
+                                        var moc = model[item].Mocs.FirstOrDefault(a => a.NeName.ToUpper() == className.ToUpper());
+                                        if (moc != null)
+                                        {
+                                            if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
+                                            {
+                                                key = true;
+                                                continue;
+                                            }
+                                            neName = moc.NeName;
+                                            omcName = moc.OMCName;
+                                        }
+                                        else
+                                            continue;
+
+                                        var searchTree = model[item].ModelTree.Descendants().Where(node => node.Name.ToUpper() == omcName.ToUpper());
+                                        if (searchTree.Any())
+                                        {
+                                            var firstItem = searchTree.FirstOrDefault();
+                                            vsmoname = firstItem.ToString();
+                                            pimoname = firstItem.ToStringPiMoname();
+                                            motype = firstItem.Getmotype();
+                                            string keyAtt = string.Join(",", parameters.Where(a => moc.KeyAttributes.Select(b => b.OMCName).Contains(a.Key)).Select(a => string.Join(":", a.Key, a.Value)));
+                                            if (!string.IsNullOrWhiteSpace(keyAtt))
+                                            {
+                                                vsmoname += "=" + keyAtt;
+                                                pimoname += "=" + keyAtt;
+                                            }
+
+                                            break;
+                                        }
                                     }
-                                    else if (NoKeyAtt != null)
-                                    {
-                                        neName = NoKeyAtt.NeName;
-                                        omcName = NoKeyAtt.OMCName;
-                                    }
 
+                                    if (key || parameter.Key == "NE" || pimoname == "NA")
+                                        continue;
+                                 
 
-                                    var searchTree = tree.Descendants().Where(node => node.Name == omcName);
-                                    if (searchTree.Any())
-                                        neType = searchTree.FirstOrDefault().ToString();
-                                    else if (parameter.Key != "NE")
-                                    { }
+                                    if (pimonameDic.ContainsKey(pimoname))
+                                        pimonameDic[pimoname]++;
+                                    else
+                                        pimonameDic.Add(pimoname, 1);
 
+                                    //→
                                     //Console.WriteLine($"NeName:{neName} omcName:{omcName} NEType{neType} Key:{key}");
-
-                                    //streamWriter.Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
-                                    streamWriter.Write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n",
-                                                        fileDateTime,
+                                    //TSV prefered to help Click House importer 
+                                    //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
+                                    streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
+                                    //streamWriter.Write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n",
+                                                        fileDate,
                                                         "-1",
                                                         "-1",
                                                         "-1",
                                                         "-1",
                                                         "-1",
                                                         ossid,
-                                                        ne,
-                                                        neType,
+                                                        vsmoname,
+                                                        pimoname,
+                                                        motype,
                                                         parameter.Key,
-                                                        parameter.Value,
-                                                        "0000-00-00 00:00:00"
-                                                        );
+                                                        parameter.Value);
+
                                 }
                             }
                         }
@@ -126,7 +161,25 @@ namespace GExportToKVP
                 }
             }
 
+            foreach (var item in pimonameDic.Keys)
+            {
+                if (item.Count(a => a == '→') == 0)
+                    continue;
+                int level = item.Count(a => a == '→') - 1;
 
+                //CMTREE => datadatetime,ossid,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype
+                streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
+                   fileDate,
+                   ossid,
+                   "",
+                   item.Split('→')[item.Count(a => a == '→')].Split('=')[0],//treeelementclass
+                   level,
+                   string.Join("→", item.Split('→').ToArray<string>().Take(item.Count(a => a == '→'))),//parentpimoname
+                   item,//pimoname
+                   item.Split('→')[item.Count(a => a == '→')],//displayvsmoname
+                    string.Join(",", item.Split('→').Select(a => a.Split('=')[0]).ToArray<string>())
+                   );
+            }
         }
     }
 }

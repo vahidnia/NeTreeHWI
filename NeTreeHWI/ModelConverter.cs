@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -10,57 +11,94 @@ namespace GExportToKVP
 {
     internal static class ModelConverter
     {
-        public static Model Convert()
+        public static Dictionary<string, Model> Convert(string ne)
         {
-            Model model = new Model();
+            Dictionary<string, Model> modelDic = new Dictionary<string, Model>();
+            Dictionary<string, string> files = new Dictionary<string, string>();
 
-            using (FileStream stream = File.OpenRead(@"C:\Users\vahid\Downloads\OneDrive_1_5-20-2020\Model.xml"))
+            foreach (var item in Directory.GetFiles(@"C:\Users\vahid\Downloads\OneDrive_1_5-20-2020\model (1)\model", "Model.xml", SearchOption.AllDirectories))
+                files.Add(item, Regex.Match(item, @"model\\(?<m>(?<m1>\w+)\\(?<m2>\w+)\\(?<m3>\w+))").Groups["m"].Value);
+
+
+            foreach (var file in files.Keys)
             {
-                XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
+                string neTreeFilePath = Path.Combine(Path.GetDirectoryName(file), "NeTree.xml");
+                if (!File.Exists(neTreeFilePath))
                 {
-                    DtdProcessing = DtdProcessing.Ignore,
-                    IgnoreComments = true,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreWhitespace = true
-                };
-                using (XmlReader xmlReader = XmlReader.Create(stream, xmlReaderSettings))
+                    Console.WriteLine("Tree not found");
+                    continue;
+                }
+
+                Model model = new Model();
+                model.NeName = ne;
+                using (FileStream stream = File.OpenRead(file))
                 {
-                    xmlReader.ReadToDescendant("DataFile");
-                    xmlReader.ReadToDescendant("NeTypeName");
-                    model.NeTypeName = xmlReader.ReadElementContentAsString();
-                    model.Version = xmlReader.ReadElementContentAsString();
-
-                    xmlReader.ReadToFollowing("MocDefs");
-
-                    xmlReader.Read();
-                    int level = 1;
-                    while (xmlReader.Name == "Moc")
+                    XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
                     {
-                        Moc moc = new Moc();
-                        model.Mocs.Add(moc);
-                        ReadMocs(xmlReader, level, moc);
-                        xmlReader.Read();
+                        DtdProcessing = DtdProcessing.Ignore,
+                        IgnoreComments = true,
+                        IgnoreProcessingInstructions = true,
+                        IgnoreWhitespace = true
+                    };
+                    using (XmlReader xmlReader = XmlReader.Create(stream, xmlReaderSettings))
+                    {
+                        try
+                        {
+                            xmlReader.ReadToDescendant("DataFile");
+                            xmlReader.ReadToDescendant("NeTypeName");
+                            model.NeTypeName = xmlReader.ReadElementContentAsString();
+                            model.Version = xmlReader.ReadElementContentAsString();
+
+                            xmlReader.ReadToFollowing("MocDefs");
+
+                            xmlReader.Read();
+                            int level = 1;
+                            while (xmlReader.Name == "Moc")
+                            {
+                                Moc moc = new Moc();
+                                model.Mocs.Add(moc);
+                                ReadMocs(xmlReader, level, moc);
+                                xmlReader.Read();
+                            }
+                        }
+                        catch
+                        {
+                            Console.WriteLine(file);
+                        }
                     }
+                    modelDic.Add(files[file], model);
+                }
+                var tree = NeTreeConverter.Convert(neTreeFilePath, model.NeName);
+                if (tree != null)
+                {
+                    model.ModelTree = tree;
+                }
+                else
+                {
+                    Console.WriteLine("error creating tree");
+                    continue;
                 }
             }
 
-            return model;
+            return modelDic;
+
         }
+
 
         private static void ReadMocs(XmlReader xmlReader, int level, Moc moc)
         {
-            moc.name = xmlReader.GetAttribute(0);
-            moc.NeName = xmlReader.GetAttribute(1);
-            moc.OMCName = xmlReader.GetAttribute(2);
-            moc.isVirtual = xmlReader.GetAttribute(3);
-            moc.category = xmlReader.GetAttribute(4);
-            moc.type = xmlReader.GetAttribute(5);
+            moc.name = xmlReader.GetAttribute("name");
+            moc.NeName = xmlReader.GetAttribute("NeName");
+            moc.OMCName = xmlReader.GetAttribute("OMCName");
+            moc.isVirtual = xmlReader.GetAttribute("isVirtual");
+            moc.category = xmlReader.GetAttribute("category");
+            moc.type = xmlReader.GetAttribute("type");
 
             xmlReader.ReadToDescendant("KeyAttrGroup");
             ReadAttrGroup(xmlReader, moc.KeyAttributes);
             //xmlReader.ReadToFollowing("AttributeGroup");
             ReadAttrGroup(xmlReader, moc.NorAttributes);
-         
+
         }
 
         private static void ReadAttrGroup(XmlReader xmlReader, List<Attribute> attList)
@@ -72,10 +110,10 @@ namespace GExportToKVP
                 {
                     Attribute att = new Attribute();
                     attList.Add(att);
-                    att.name = xmlReader.GetAttribute(0);
-                    att.NeName = xmlReader.GetAttribute(1);
-                    att.OMCName = xmlReader.GetAttribute(2);
-                    att.mmlDisNameId = xmlReader.GetAttribute(3);
+                    att.name = xmlReader.GetAttribute("name");
+                    att.NeName = xmlReader.GetAttribute("NeName");
+                    att.OMCName = xmlReader.GetAttribute("OMCName");
+                    att.mmlDisNameId = xmlReader.GetAttribute("mmlDisNameId");
 
                     xmlReader.Skip();
                     //xmlReader.ReadEndElement();
@@ -85,5 +123,7 @@ namespace GExportToKVP
             else
             { }
         }
+
+
     }
 }
