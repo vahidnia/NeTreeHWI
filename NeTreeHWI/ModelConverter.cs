@@ -16,7 +16,7 @@ namespace GExportToKVP
             Dictionary<string, Model> modelDic = new Dictionary<string, Model>();
             Dictionary<string, string> files = new Dictionary<string, string>();
 
-            foreach (var item in Directory.GetFiles(@"C:\Users\vahid\Downloads\OneDrive_1_5-20-2020\model (1)\model", "Model.xml", SearchOption.AllDirectories))
+            foreach (var item in Directory.GetFiles(@"C:\!working\CM\HWI\model", "Model.xml", SearchOption.AllDirectories))
                 files.Add(item, Regex.Match(item, @"model\\(?<m>(?<m1>\w+)\\(?<m2>\w+)\\(?<m3>\w+))").Groups["m"].Value);
 
 

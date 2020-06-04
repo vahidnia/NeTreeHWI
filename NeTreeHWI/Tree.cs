@@ -30,11 +30,6 @@ namespace GExportToKVP
             return GetPname();
         }
 
-        public string ToStringPiMoname()
-        {
-            return GetPiPname();
-        }
-
         public string GetPname()
         {
             if (this.Parent == null)
@@ -43,12 +38,19 @@ namespace GExportToKVP
                 return Parent.GetPname() + "," + this.Name;
         }
 
-        public string GetPiPname()
+        public string GetPiMoname(List<Moc> mocs, Dictionary<string, string> parameters)
         {
+            string att = "";
+            var moc = mocs.FirstOrDefault(a => a.NeName.ToUpper() == this.Name.ToUpper());
+            if (moc != null)
+                att = string.Join(",", parameters.Where(a => moc.KeyAttributes.Select(b => b.OMCName).Contains(a.Key)).Select(a => string.Join(":", a.Key, a.Value)));
             if (this.Parent == null)
-                return "NE=" + NE + "→" + this.Name;
+                return "ManagedElement=" + NE + "→" + this.Name;
             else
-                return Parent.GetPiPname() + "→" + this.Name;
+                if (string.IsNullOrWhiteSpace(att))
+                return Parent.GetPiMoname(mocs, parameters) + "→" + this.Name;
+            else
+                return Parent.GetPiMoname(mocs, parameters) + "→" + this.Name + "=" + att;
         }
 
         public string Getmotype()
