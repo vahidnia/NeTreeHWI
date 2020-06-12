@@ -11,7 +11,7 @@ namespace GExportToKVP
         public Tree ModelTree { get; set; }
         public Model()
         {
-            Mocs = new List<Moc>();
+            Mocs = new Dictionary<string, Moc>();
         }
         public string NeTypeName { get; set; }
         public string Version { get; set; }
@@ -24,7 +24,7 @@ namespace GExportToKVP
         public string category { get; set; }
         public string type { get; set; }
 
-        public List<Moc> Mocs { get; set; }
+        public Dictionary<string, Moc> Mocs { get; set; }
     }
 
     public class Moc

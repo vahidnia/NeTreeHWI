@@ -38,14 +38,15 @@ namespace GExportToKVP
                 return Parent.GetPname() + "," + this.Name;
         }
 
-        public string GetPiMoname(List<Moc> mocs, Dictionary<string, string> parameters)
+        public string GetPiMoname(Dictionary<string, Moc> mocs, Dictionary<string, string> parameters)
         {
             string att = "";
-            var moc = mocs.FirstOrDefault(a => a.NeName.ToUpper() == this.Name.ToUpper());
-            if (moc != null)
-                att = string.Join(",", parameters.Where(a => moc.KeyAttributes.Select(b => b.OMCName).Contains(a.Key)).Select(a => string.Join(":", a.Key, a.Value)));
+            //var moc = mocs[this.Name.ToUpper()];
+            if (mocs.ContainsKey(this.Name.ToUpper()))
+                att = string.Join(",", parameters.Where(a => mocs[this.Name.ToUpper()].KeyAttributes.Select(b => b.OMCName).Contains(a.Key)).Select(a => string.Join(":", a.Key, a.Value)));
+            //if(this.Name.ToUpper() == "ANTENNAPORT") { }
             if (this.Parent == null)
-                return "ManagedElement=" + NE + "→" + this.Name;
+                return this.Name + "=" + NE;
             else
                 if (string.IsNullOrWhiteSpace(att))
                 return Parent.GetPiMoname(mocs, parameters) + "→" + this.Name;

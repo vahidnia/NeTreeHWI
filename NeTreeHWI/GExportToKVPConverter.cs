@@ -93,19 +93,17 @@ namespace GExportToKVP
 
                                     foreach (var item in model.Keys.Where(a => a.Contains("OSS_BTS3900_MATCH_ENG_V300R019C10SPC210")))
                                     {
-                                        var moc = model[item].Mocs.FirstOrDefault(a => a.NeName.ToUpper() == className.ToUpper());
-                                        if (moc != null)
-                                        {
-                                            if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
-                                            {
-                                                key = true;
-                                                continue;
-                                            }
-                                            neName = moc.NeName;
-                                            omcName = moc.OMCName;
-                                        }
-                                        else
+                                        if (!model[item].Mocs.ContainsKey(className.ToUpper()))
                                             continue;
+                                        var moc = model[item].Mocs[className.ToUpper()];
+
+                                        if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
+                                        {
+                                            key = true;
+                                            continue;
+                                        }
+                                        neName = moc.NeName;
+                                        omcName = moc.OMCName;
 
                                         var searchTree = model[item].ModelTree.Descendants().Where(node => node.Name.ToUpper() == omcName.ToUpper());
                                         if (searchTree.Any())
@@ -113,6 +111,8 @@ namespace GExportToKVP
                                             var firstItem = searchTree.FirstOrDefault();
                                             pimoname = firstItem.GetPiMoname(model[item].Mocs, parameters);
                                             vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
+
+
                                             motype = firstItem.Getmotype();
                                             break;
                                         }
@@ -134,11 +134,11 @@ namespace GExportToKVP
                                     streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
                                     //streamWriter.Write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n",
                                                         fileDate,
-                                                        "-1",
-                                                        "-1",
-                                                        "-1",
-                                                        "-1",
-                                                        "-1",
+                                                        "\\N",
+                                                        "\\N",
+                                                        "\\N",
+                                                        "\\N",
+                                                        "\\N",
                                                         ossid,
                                                         vsmoname,
                                                         pimoname,
@@ -153,19 +153,19 @@ namespace GExportToKVP
                     xmlReader.ReadEndElement();
                 }
             }
-
+          
             foreach (var item in pimonameDic.Keys)
             {
                 if (item.Count(a => a == '→') == 0)
                     continue;
-                int level = item.Count(a => a == '→') - 1;
+                int level = item.Count(a => a == '→');
                 string parentpimoname = string.Join("→", item.Split('→').ToArray<string>().Take(item.Count(a => a == '→')));
 
                 //CMTREE => datadatetime,ossid,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype
                 streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
                    fileDate,
                    ossid,
-                   level == 1 ? parentpimoname : "",//netopologyfolder
+                   item.Split('→')[0],//netopologyfolder
                    item.Split('→')[item.Count(a => a == '→')].Split('=')[0],//treeelementclass
                    level,
                    level > 1 ? parentpimoname : "",//parentpimoname

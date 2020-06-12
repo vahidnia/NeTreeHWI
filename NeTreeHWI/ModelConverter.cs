@@ -56,12 +56,12 @@ namespace GExportToKVP
                             while (xmlReader.Name == "Moc")
                             {
                                 Moc moc = new Moc();
-                                model.Mocs.Add(moc);
                                 ReadMocs(xmlReader, level, moc);
+                                model.Mocs.Add(moc.NeName.ToUpper(), moc);
                                 xmlReader.Read();
                             }
                         }
-                        catch
+                        catch (Exception ex)
                         {
                             Console.WriteLine(file);
                         }
