@@ -38,20 +38,33 @@ namespace GExportToKVP
                 return Parent.GetPname() + "," + this.Name;
         }
 
-        public string GetPiMoname(Dictionary<string, Moc> mocs, Dictionary<string, string> parameters)
+        public string GetPiMoname(Dictionary<string, Moc> mocs, Dictionary<string, string> parameters, HashSet<string> existingAtt)
         {
             string att = "";
             //var moc = mocs[this.Name.ToUpper()];
-            if (mocs.ContainsKey(this.Name.ToUpper()))
-                att = string.Join(",", parameters.Where(a => mocs[this.Name.ToUpper()].KeyAttributes.Select(b => b.OMCName).Contains(a.Key)).Select(a => string.Join(":", a.Key, a.Value)));
-            //if(this.Name.ToUpper() == "ANTENNAPORT") { }
             if (this.Parent == null)
                 return this.Name + "=" + NE;
-            else
+
+            string ppmoname  = Parent.GetPiMoname(mocs, parameters, existingAtt);
+
+            if (mocs.ContainsKey(this.Name.ToUpper()))
+            {
+                var paramList = parameters.Where(a => mocs[this.Name.ToUpper()].KeyAttributes.Select(b => b.OMCName).Contains(a.Key));
+
+              
+                var paramListParentRemoved = paramList.Where(a => !existingAtt.Contains(a.Key));
+                att = string.Join(",", paramListParentRemoved.Select(a => string.Join(":", a.Key, a.Value)));
+                foreach (var item in paramListParentRemoved)
+                    existingAtt.Add(item.Key);
+            }
+
+      
+           
                 if (string.IsNullOrWhiteSpace(att))
-                return Parent.GetPiMoname(mocs, parameters) + "→" + this.Name;
-            else
-                return Parent.GetPiMoname(mocs, parameters) + "→" + this.Name + "=" + att;
+                    return ppmoname + "→" + this.Name;
+                else
+                    return ppmoname + "→" + this.Name + "=" + att;
+           
         }
 
         public string Getmotype()

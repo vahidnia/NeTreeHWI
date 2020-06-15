@@ -109,11 +109,14 @@ namespace GExportToKVP
                 while (xmlReader.Name == "KeyAttribute" || xmlReader.Name == "NorAttribute")
                 {
                     Attribute att = new Attribute();
-                    attList.Add(att);
+                    
                     att.name = xmlReader.GetAttribute("name");
                     att.NeName = xmlReader.GetAttribute("NeName");
                     att.OMCName = xmlReader.GetAttribute("OMCName");
                     att.mmlDisNameId = xmlReader.GetAttribute("mmlDisNameId");
+
+                    if(xmlReader.Name == "KeyAttribute" && att.OMCName != "OBJID")
+                        attList.Add(att);
 
                     xmlReader.Skip();
                     //xmlReader.ReadEndElement();

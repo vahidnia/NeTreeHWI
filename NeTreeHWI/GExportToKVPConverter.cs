@@ -9,9 +9,15 @@ namespace GExportToKVP
 {
     internal static class GExportToKVPConverter
     {
-        public static void Convert(Stream xmlStream, string dbFilePath, string ne, bool removeClassNameSuffix, List<StreamWriter> streamWriter, Dictionary<string, Dictionary<string, int>> columnIndices, Dictionary<string, Model> model)
+        public static void Convert(Stream xmlStream,
+            string dbFilePath,
+            string ne,
+            bool removeClassNameSuffix,
+            List<StreamWriter> streamWriter,
+            Dictionary<string, Dictionary<string, int>> columnIndices,
+            Dictionary<string, Model> models)
         {
-            Dictionary<string, int> pimonameDic = new Dictionary<string, int>();
+            Dictionary<string, string> pimonameDic = new Dictionary<string, string>();
             string fileDate = "2020-04-06 06:00:00";
             var ossid = 46; //HAVA
 
@@ -91,11 +97,12 @@ namespace GExportToKVP
                                     string motype = "NA";
 
 
-                                    foreach (var item in model.Keys.Where(a => a.Contains("OSS_BTS3900_MATCH_ENG_V300R019C10SPC210")))
+                                    foreach (var item in models.Keys.Where(a => a.Contains("OSS_BTS3900_MATCH_ENG_V300R019C10SPC210")))
                                     {
-                                        if (!model[item].Mocs.ContainsKey(className.ToUpper()))
+                                        var model = models[item];
+                                        if (!model.Mocs.ContainsKey(className.ToUpper()))
                                             continue;
-                                        var moc = model[item].Mocs[className.ToUpper()];
+                                        var moc = model.Mocs[className.ToUpper()];
 
                                         if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
                                         {
@@ -105,11 +112,12 @@ namespace GExportToKVP
                                         neName = moc.NeName;
                                         omcName = moc.OMCName;
 
-                                        var searchTree = model[item].ModelTree.Descendants().Where(node => node.Name.ToUpper() == omcName.ToUpper());
+                                        var searchTree = model.ModelTree.Descendants().Where(node => node.Name.ToUpper() == omcName.ToUpper());
                                         if (searchTree.Any())
                                         {
+                                            HashSet<string> exsitingAtt = new HashSet<string>();
                                             var firstItem = searchTree.FirstOrDefault();
-                                            pimoname = firstItem.GetPiMoname(model[item].Mocs, parameters);
+                                            pimoname = firstItem.GetPiMoname(model.Mocs, parameters, exsitingAtt);
                                             vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
 
 
@@ -120,12 +128,11 @@ namespace GExportToKVP
 
                                     if (key || parameter.Key == "NE" || pimoname == "NA")
                                         continue;
+                                    if (pimoname.Split('→')[pimoname.Count(a => a == '→')].Contains("LIOPTRULE"))
+                                    { }
 
-
-                                    if (pimonameDic.ContainsKey(pimoname))
-                                        pimonameDic[pimoname]++;
-                                    else
-                                        pimonameDic.Add(pimoname, 1);
+                                    if (!pimonameDic.ContainsKey(pimoname))
+                                        pimonameDic.Add(pimoname, vsmoname);
 
                                     //→
                                     //Console.WriteLine($"NeName:{neName} omcName:{omcName} NEType{neType} Key:{key}");
@@ -153,16 +160,17 @@ namespace GExportToKVP
                     xmlReader.ReadEndElement();
                 }
             }
-          
+
             foreach (var item in pimonameDic.Keys)
             {
-                if (item.Count(a => a == '→') == 0)
-                    continue;
                 int level = item.Count(a => a == '→');
+                if (level == 0)
+                    continue;
+
                 string parentpimoname = string.Join("→", item.Split('→').ToArray<string>().Take(item.Count(a => a == '→')));
 
-                //CMTREE => datadatetime,ossid,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype
-                streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
+                //CMTREE => datadatetime,ossid,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype,vsmoname
+                streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\n",
                    fileDate,
                    ossid,
                    item.Split('→')[0],//netopologyfolder
@@ -171,7 +179,8 @@ namespace GExportToKVP
                    level > 1 ? parentpimoname : "",//parentpimoname
                    item,//pimoname
                    item.Split('→')[item.Count(a => a == '→')],//displayvsmoname
-                   string.Join(",", item.Split('→').Select(a => a.Split('=')[0]).ToArray<string>())
+                   string.Join(",", item.Split('→').Select(a => a.Split('=')[0]).ToArray<string>()),
+                   pimonameDic[item] //vsmoname 
                    );
             }
         }
