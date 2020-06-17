@@ -35,6 +35,9 @@ namespace GExportToKVP
                 xmlReader.ReadToDescendant("configData");
                 xmlReader.ReadToDescendant("class");
                 xmlReader.ReadToDescendant("object"); // TODO: extract 'technique'?
+
+                string version = xmlReader.GetAttribute("version");
+
                 xmlReader.ReadToDescendant("class");
 
 
@@ -97,9 +100,13 @@ namespace GExportToKVP
                                     string motype = "NA";
 
 
-                                    foreach (var item in models.Keys.Where(a => a.Contains("OSS_BTS3900_MATCH_ENG_V300R019C10SPC210")))
+
+                                    // foreach (var item in models.Keys.Where(a => a.Contains("OSS_BTS3900_MATCH_ENG_V300R019C10SPC210")))
+                                    foreach (var item in models.Values.Where(a => a.DisplayVersion == version))
+
                                     {
-                                        var model = models[item];
+                                        //var model = models[item];
+                                        var model = item;
                                         if (!model.Mocs.ContainsKey(className.ToUpper()))
                                             continue;
                                         var moc = model.Mocs[className.ToUpper()];
@@ -112,12 +119,12 @@ namespace GExportToKVP
                                         neName = moc.NeName;
                                         omcName = moc.OMCName;
 
-                                        var searchTree = model.ModelTree.Descendants().Where(node => node.Name.ToUpper() == omcName.ToUpper());
+                                        var searchTree = model.ModelTree.Descendants().Where(node => node.Name == omcName);
                                         if (searchTree.Any())
                                         {
                                             HashSet<string> exsitingAtt = new HashSet<string>();
                                             var firstItem = searchTree.FirstOrDefault();
-                                            pimoname = firstItem.GetPiMoname(model.Mocs, parameters, exsitingAtt);
+                                            pimoname = firstItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne);
                                             vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
 
 

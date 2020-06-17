@@ -11,9 +11,9 @@ namespace GExportToKVP
     internal static class NeTreeConverter
     {
 
-        public static Tree Convert(string path, string neName)
+        public static Tree Convert(string path,string neName)
         {
-            Tree tree = new Tree(neName);
+            Tree tree = new Tree();
             try
             {
                 using (FileStream stream = File.OpenRead(path))
@@ -64,7 +64,7 @@ namespace GExportToKVP
         {
             string MocName = xmlReader.GetAttribute(0);
             //Console.WriteLine($"level:{level} Moc:{MocName}");
-            Tree tree = new Tree(ptree, "");
+            Tree tree = new Tree(ptree);
             tree.Name = MocName;
             tree.Level = level;
             ptree.Children.Add(tree);

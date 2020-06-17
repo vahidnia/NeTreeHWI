@@ -9,18 +9,16 @@ namespace GExportToKVP
 {
     public class Tree
     {
-        public Tree(string neName)
+        public Tree()
         {
-            this.NE = neName;
             this.Parent = null;
         }
-        public Tree(Tree Parent, string neName)
+
+        public Tree(Tree Parent)
         {
             this.Parent = Parent;
-            this.NE = neName;
         }
 
-        public string NE { get; set; }
         private Tree Parent;
         public string Name { get; set; }
         public int Level { get; set; }
@@ -38,33 +36,33 @@ namespace GExportToKVP
                 return Parent.GetPname() + "," + this.Name;
         }
 
-        public string GetPiMoname(Dictionary<string, Moc> mocs, Dictionary<string, string> parameters, HashSet<string> existingAtt)
+        public string GetPiMoname(Dictionary<string, Moc> mocs, Dictionary<string, string> parameters, HashSet<string> existingAtt, string ne)
         {
             string att = "";
             //var moc = mocs[this.Name.ToUpper()];
             if (this.Parent == null)
-                return this.Name + "=" + NE;
+                return this.Name + "=" + ne;
 
-            string ppmoname  = Parent.GetPiMoname(mocs, parameters, existingAtt);
+            string ppmoname = Parent.GetPiMoname(mocs, parameters, existingAtt, ne);
 
             if (mocs.ContainsKey(this.Name.ToUpper()))
             {
-                var paramList = parameters.Where(a => mocs[this.Name.ToUpper()].KeyAttributes.Select(b => b.OMCName).Contains(a.Key));
+                var paramList = parameters.Where(a => mocs[this.Name].KeyAttributes.Select(b => b.OMCName).Contains(a.Key)).ToList();
 
-              
-                var paramListParentRemoved = paramList.Where(a => !existingAtt.Contains(a.Key));
+
+                var paramListParentRemoved = paramList.Where(a => !existingAtt.Contains(a.Key)).ToList();
                 att = string.Join(",", paramListParentRemoved.Select(a => string.Join(":", a.Key, a.Value)));
                 foreach (var item in paramListParentRemoved)
                     existingAtt.Add(item.Key);
             }
 
-      
-           
-                if (string.IsNullOrWhiteSpace(att))
-                    return ppmoname + "→" + this.Name;
-                else
-                    return ppmoname + "→" + this.Name + "=" + att;
-           
+
+
+            if (string.IsNullOrWhiteSpace(att))
+                return ppmoname + "→" + this.Name;
+            else
+                return ppmoname + "→" + this.Name + "=" + att;
+
         }
 
         public string Getmotype()

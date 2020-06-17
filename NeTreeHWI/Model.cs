@@ -24,6 +24,7 @@ namespace GExportToKVP
         public string category { get; set; }
         public string type { get; set; }
 
+        public string DisplayVersion { get; set; }
         public Dictionary<string, Moc> Mocs { get; set; }
     }
 
