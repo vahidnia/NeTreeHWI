@@ -47,13 +47,25 @@ namespace GExportToKVP
 
             if (mocs.ContainsKey(this.Name.ToUpper()))
             {
-                var paramList = parameters.Where(a => mocs[this.Name].KeyAttributes.Select(b => b.OMCName).Contains(a.Key)).ToList();
+                //var paramList = parameters.Where(a => mocs[this.Name].KeyAttributes.Select(b => b.OMCName).Contains(a.Key)).ToList();
 
 
-                var paramListParentRemoved = paramList.Where(a => !existingAtt.Contains(a.Key)).ToList();
-                att = string.Join(",", paramListParentRemoved.Select(a => string.Join(":", a.Key, a.Value)));
-                foreach (var item in paramListParentRemoved)
-                    existingAtt.Add(item.Key);
+                //var paramListParentRemoved = paramList.Where(a => !existingAtt.Contains(a.Key)).ToList();
+                //att = string.Join(",", paramListParentRemoved.Select(a => string.Join(":", a.Key, a.Value)));
+                //foreach (var item in paramListParentRemoved)
+                //    existingAtt.Add(item.Key);
+
+
+                foreach (var item in mocs[this.Name].KeyAttributes.Select(b => b.OMCName))
+                {
+                    if (parameters.ContainsKey(item))
+                        if (!existingAtt.Contains(parameters[item]))
+                        {
+                            att += string.Join(":", item, parameters[item]) + ",";
+                        }
+                }
+                att.TrimEnd(new char[] { ',' });
+
             }
 
 

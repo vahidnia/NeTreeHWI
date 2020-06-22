@@ -61,8 +61,6 @@ namespace GExportToKVP
                     }
                 }
 
-                streamWriter[0].Flush();
-                streamWriter[1].Flush();
             }
 
             streamWriter[0].Flush();

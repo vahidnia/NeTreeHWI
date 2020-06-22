@@ -120,15 +120,13 @@ namespace GExportToKVP
                                         omcName = moc.OMCName;
 
                                         var searchTree = model.ModelTree.Descendants().Where(node => node.Name == omcName);
-                                        if (searchTree.Any())
+                                        var searchTreeItem = searchTree.FirstOrDefault();
+                                        if (searchTreeItem != null)
                                         {
                                             HashSet<string> exsitingAtt = new HashSet<string>();
-                                            var firstItem = searchTree.FirstOrDefault();
-                                            pimoname = firstItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne);
+                                            pimoname = searchTreeItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne);
                                             vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
-
-
-                                            motype = firstItem.Getmotype();
+                                            motype = searchTreeItem.Getmotype();
                                             break;
                                         }
                                     }
