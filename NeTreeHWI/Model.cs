@@ -49,9 +49,16 @@ namespace GExportToKVP
 
     public class Attribute
     {
+        public Attribute()
+        {
+            IsString = false;
+        }
         public string name { get; set; }
         public string NeName { get; set; }
         public string OMCName { get; set; }
         public string mmlDisNameId { get; set; }
+        public Boolean IsString { get; set; }
     }
+
+
 }

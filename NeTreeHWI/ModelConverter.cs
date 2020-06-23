@@ -72,7 +72,7 @@ namespace GExportToKVP
                             xmlReader.ReadToDescendant("NeTypeName");
                             model.NeTypeName = xmlReader.ReadElementContentAsString();
                             model.Version = xmlReader.ReadElementContentAsString();
-                            
+
                             xmlReader.ReadToFollowing("MocDefs");
 
                             xmlReader.Read();
@@ -123,13 +123,13 @@ namespace GExportToKVP
             moc.type = xmlReader.GetAttribute("type");
 
             xmlReader.ReadToDescendant("KeyAttrGroup");
-            ReadAttrGroup(xmlReader, moc.KeyAttributes);
+            ReadAttrGroup(xmlReader, moc.KeyAttributes, true);
             //xmlReader.ReadToFollowing("AttributeGroup");
-            ReadAttrGroup(xmlReader, moc.NorAttributes);
+            ReadAttrGroup(xmlReader, moc.NorAttributes, false);
 
         }
 
-        private static void ReadAttrGroup(XmlReader xmlReader, List<Attribute> attList)
+        private static void ReadAttrGroup(XmlReader xmlReader, List<Attribute> attList, Boolean IsKey)
         {
             xmlReader.ReadStartElement();
             if (xmlReader.HasAttributes)
@@ -143,11 +143,13 @@ namespace GExportToKVP
                     att.OMCName = xmlReader.GetAttribute("OMCName");
                     att.mmlDisNameId = xmlReader.GetAttribute("mmlDisNameId");
 
-                    if (xmlReader.Name == "KeyAttribute" && att.OMCName != "OBJID")
-                        attList.Add(att);
+                    var xmlInnet = xmlReader.ReadInnerXml();
+                    var match = Regex.Match(xmlInnet, @"basicId=""(?<type>\w+)""");
+                    if (match.Success)
+                        att.IsString = match.Groups[1].Value == "string";
 
-                    xmlReader.Skip();
-                    //xmlReader.ReadEndElement();
+                    if (IsKey == true)
+                        attList.Add(att);
                 }
                 xmlReader.ReadEndElement();
             }

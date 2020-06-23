@@ -124,8 +124,9 @@ namespace GExportToKVP
                                         if (searchTreeItem != null)
                                         {
                                             HashSet<string> exsitingAtt = new HashSet<string>();
-                                            pimoname = searchTreeItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne);
-                                            vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
+                                            pimoname = searchTreeItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne, out vsmoname);
+                                            //vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
+                                            vsmoname = ne + "/" + className + (string.IsNullOrWhiteSpace(vsmoname) ? "" : ":" + vsmoname);
                                             motype = searchTreeItem.Getmotype();
                                             break;
                                         }

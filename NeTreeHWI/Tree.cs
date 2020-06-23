@@ -36,15 +36,16 @@ namespace GExportToKVP
                 return Parent.GetPname() + "," + this.Name;
         }
 
-        public string GetPiMoname(Dictionary<string, Moc> mocs, Dictionary<string, string> parameters, HashSet<string> existingAtt, string ne)
+        public string GetPiMoname(Dictionary<string, Moc> mocs, Dictionary<string, string> parameters, HashSet<string> existingAtt, string ne, out string vsmoname)
         {
             string att = "";
             //var moc = mocs[this.Name.ToUpper()];
+            vsmoname = "";
             if (this.Parent == null)
                 return this.Name + "=" + ne;
 
-            string ppmoname = Parent.GetPiMoname(mocs, parameters, existingAtt, ne);
-
+            string ppmoname = Parent.GetPiMoname(mocs, parameters, existingAtt, ne, out vsmoname);
+            vsmoname = "";
             if (mocs.ContainsKey(this.Name.ToUpper()))
             {
                 //var paramList = parameters.Where(a => mocs[this.Name].KeyAttributes.Select(b => b.OMCName).Contains(a.Key)).ToList();
@@ -56,19 +57,18 @@ namespace GExportToKVP
                 //    existingAtt.Add(item.Key);
 
 
-                foreach (var item in mocs[this.Name].KeyAttributes.Select(b => b.OMCName))
+                foreach (var item in mocs[this.Name].KeyAttributes)
                 {
-                    if (parameters.ContainsKey(item))
-                        if (!existingAtt.Contains(parameters[item]))
+                    if (parameters.ContainsKey(item.OMCName))
+                        if (!existingAtt.Contains(parameters[item.OMCName]))
                         {
-                            att += string.Join(":", item, parameters[item]) + ",";
+                            att += string.Join(":", item.OMCName, parameters[item.OMCName]) + ",";
+                            vsmoname += string.Join("=", item.OMCName, item.IsString ? "\"" + parameters[item.OMCName] + "\"" : parameters[item.OMCName]) + ",";
                         }
                 }
-                att.TrimEnd(new char[] { ',' });
-
+                att = att.TrimEnd(new char[] { ',' });
+                vsmoname = vsmoname.TrimEnd(new char[] { ',' });
             }
-
-
 
             if (string.IsNullOrWhiteSpace(att))
                 return ppmoname + "→" + this.Name;
