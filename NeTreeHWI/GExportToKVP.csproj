@@ -46,6 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EAMInfoParser.cs" />
+    <Compile Include="EamNe.cs" />
     <Compile Include="GExportToKVPConverter.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="ModelConverter.cs" />

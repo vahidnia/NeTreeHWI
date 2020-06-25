@@ -11,17 +11,19 @@ namespace GExportToKVP
 {
     internal static class ModelConverter
     {
-        public static Dictionary<string, Model> Convert()
+        public static Dictionary<string, Model> Convert(string modelPath)
         {
             Dictionary<string, Model> modelDic = new Dictionary<string, Model>();
             Dictionary<string, string> files = new Dictionary<string, string>();
             Dictionary<string, NeVersionDef> NeVersionDic = new Dictionary<string, NeVersionDef>();
 
 
-            foreach (var item in Directory.GetFiles(@"C:\!working\CM\HWI\model", "Model.xml", SearchOption.AllDirectories))
+            EamInfoParser.ExtractNeList(Path.Combine(modelPath, "EAMInfo.xml"));
+
+            foreach (var item in Directory.GetFiles(modelPath, "Model.xml", SearchOption.AllDirectories))
                 files.Add(item, Regex.Match(item, @"model\\(?<m>(?<m1>\w+)\\(?<m2>\w+)\\(?<m3>\w+))").Groups["m"].Value);
 
-            foreach (var item in Directory.GetFiles(@"C:\!working\CM\HWI\model", "NeVersion.def", SearchOption.AllDirectories))
+            foreach (var item in Directory.GetFiles(modelPath, "NeVersion.def", SearchOption.AllDirectories))
             {
                 NeVersionDef neVersion = new NeVersionDef();
                 var lines = File.ReadAllLines(item);

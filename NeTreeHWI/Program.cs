@@ -14,16 +14,15 @@ namespace GExportToKVP
 
 
 
-            if (args.Length != 3)
+            if (args.Length != 4)
             {
-                Console.WriteLine("Usage: gexport2sqlite <source.xml> <target.sqlite>");
-                Console.WriteLine("       gexport2sqlite <source.xml.gz> <target.sqlite>");
-                Console.WriteLine("       gexport2sqlite *.xml <target.sqlite>");
+                Console.WriteLine("Wrong args!");
                 return;
             }
             string sourcePath = args[0];
             string sourceFileMask = args[1];
             string dbFilePath = args[2];
+            string modelPath = args[3];
 
 
             List<StreamWriter> streamWriter = new List<StreamWriter>();
@@ -35,7 +34,9 @@ namespace GExportToKVP
 
             Dictionary<string, Dictionary<string, int>> columnIndices = new Dictionary<string, Dictionary<string, int>>(StringComparer.OrdinalIgnoreCase);
             //Dictionary<string, SQLiteCommand> dbInsertCommandCache = new Dictionary<string, SQLiteCommand>(StringComparer.OrdinalIgnoreCase);
-            var model = ModelConverter.Convert();
+
+            //EamInfoParser.ExtractNeList()
+            var model = ModelConverter.Convert(modelPath);
 
             foreach (string filePath in Directory.EnumerateFiles(sourcePath, sourceFileMask))
             {
