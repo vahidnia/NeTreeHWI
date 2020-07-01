@@ -15,12 +15,13 @@ namespace GExportToKVP
             bool removeClassNameSuffix,
             List<StreamWriter> streamWriter,
             Dictionary<string, Dictionary<string, int>> columnIndices,
-            Dictionary<string, Model> models)
+            Dictionary<string, Model> models,
+            List<EamNe> eamNElist)
         {
             Dictionary<string, string> pimonameDic = new Dictionary<string, string>();
             string fileDate = "2020-04-06 06:00:00";
             var ossid = 46; //HAVA
-
+            var eamNE = eamNElist.FirstOrDefault(a => a.NeName == ne);
 
             XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
             {
@@ -179,7 +180,7 @@ namespace GExportToKVP
                 streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\n",
                    fileDate,
                    ossid,
-                   item.Split('→')[0],//netopologyfolder
+                   eamNE == null ? "" : eamNE.Folder,//netopologyfolder
                    item.Split('→')[item.Count(a => a == '→')].Split('=')[0],//treeelementclass
                    level,
                    level > 1 ? parentpimoname : "",//parentpimoname

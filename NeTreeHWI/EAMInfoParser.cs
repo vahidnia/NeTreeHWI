@@ -9,12 +9,13 @@ namespace GExportToKVP
 {
     internal static class EamInfoParser
     {
+        static Dictionary<string, Tuple<string, string>> eamInfoDic = new Dictionary<string, Tuple<string, string>>();
         public static List<EamNe> ExtractNeList(string filePath)
         {
             List<EamNe> neList = new List<EamNe>();
 
             XDocument xDoc = XDocument.Load(filePath);
-            Dictionary<string, Tuple<string, string>> eamInfoDic = new Dictionary<string, Tuple<string, string>>();
+
             foreach (XElement xSubnet in xDoc.Root.Descendants("Subnets").Descendants("Subnet"))
             {
                 eamInfoDic.Add(xSubnet.Attribute("ProductFdn").Value, new Tuple<string, string>(xSubnet.Attribute("ParentProductFdn").Value, xSubnet.Attribute("SubnetName").Value));
@@ -94,16 +95,20 @@ namespace GExportToKVP
                         }
                     }
                 }
+                string folder = "";
+                if (ne.Subnet != null)
+                    foreach (var item in ne.Subnet.Split('@'))
+                        if (eamInfoDic.ContainsKey(item))
+                            folder += eamInfoDic[item].Item2 + "→";
 
-                foreach (var item in ne.Subnet.Split('@'))
-                {
-
-                }
+                ne.Folder = folder.TrimEnd('→');
 
             }
 
             return neList;
         }
+
+
     }
 }
 

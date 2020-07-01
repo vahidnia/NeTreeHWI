@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GExportToKVP
 {
-    internal sealed class EamNe
+    public sealed class EamNe
     {
         public string NeType { get; set; }
         public string NeFdn { get; set; }
@@ -30,17 +30,8 @@ namespace GExportToKVP
         public string NodeBFunctionRelateNeFdn { get; set; }
         public string ENodeBFunctionName { get; set; }
 
-        public string Folder
-        {
-            get
-            {
-                foreach (var item in this.Subnet.Split('@'))
-                {
+        public string Folder { get; set; }
 
-                }
-               
-            }
-        }
 
     }
 }

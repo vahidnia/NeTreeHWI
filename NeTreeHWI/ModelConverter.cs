@@ -18,8 +18,6 @@ namespace GExportToKVP
             Dictionary<string, NeVersionDef> NeVersionDic = new Dictionary<string, NeVersionDef>();
 
 
-            EamInfoParser.ExtractNeList(Path.Combine(modelPath, "EAMInfo.xml"));
-
             foreach (var item in Directory.GetFiles(modelPath, "Model.xml", SearchOption.AllDirectories))
                 files.Add(item, Regex.Match(item, @"model\\(?<m>(?<m1>\w+)\\(?<m2>\w+)\\(?<m3>\w+))").Groups["m"].Value);
 
@@ -109,7 +107,7 @@ namespace GExportToKVP
                     continue;
                 }
             }
-
+ 
             return modelDic;
 
         }
@@ -150,7 +148,7 @@ namespace GExportToKVP
                     if (match.Success)
                         att.IsString = match.Groups[1].Value == "string";
 
-                    if (IsKey == true)
+                    if (IsKey == true && att.OMCName != "OBJID")
                         attList.Add(att);
                 }
                 xmlReader.ReadEndElement();

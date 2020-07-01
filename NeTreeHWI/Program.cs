@@ -38,6 +38,10 @@ namespace GExportToKVP
             //EamInfoParser.ExtractNeList()
             var model = ModelConverter.Convert(modelPath);
 
+
+            var nodeList = EamInfoParser.ExtractNeList(Path.Combine(modelPath, "EAMInfo.xml"));
+
+
             foreach (string filePath in Directory.EnumerateFiles(sourcePath, sourceFileMask))
             {
                 string fileName = Path.GetFileName(filePath);
@@ -50,7 +54,7 @@ namespace GExportToKVP
                     {
                         using (Stream stream = new ICSharpCode.SharpZipLib.GZip.GZipInputStream(compressedStream))
                         {
-                            GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model);
+                            GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model, nodeList);
                         }
                     }
                 }
@@ -58,7 +62,7 @@ namespace GExportToKVP
                 {
                     using (FileStream stream = File.OpenRead(filePath))
                     {
-                        GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model);
+                        GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model, nodeList);
                     }
                 }
 
