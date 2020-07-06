@@ -146,8 +146,10 @@ namespace GExportToKVP
                     var xmlInnet = xmlReader.ReadInnerXml();
                     var match = Regex.Match(xmlInnet, @"basicId=""(?<type>\w+)""");
                     if (match.Success)
+                    {
                         att.IsString = match.Groups[1].Value == "string";
-
+                        att.type = match.Groups[1].Value;
+                    }
                     if (IsKey == true && att.OMCName != "OBJID")
                         attList.Add(att);
                 }

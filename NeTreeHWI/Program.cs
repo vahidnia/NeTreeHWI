@@ -29,15 +29,40 @@ namespace GExportToKVP
 
             streamWriter.Add(new StreamWriter(dbFilePath, false));
             streamWriter.Add(new StreamWriter(Path.Combine(Path.GetDirectoryName(dbFilePath), "Tree" + Path.GetFileName(dbFilePath)), false));
-
+            streamWriter.Add(new StreamWriter(Path.Combine(Path.GetDirectoryName(dbFilePath), "Type" + Path.GetFileName(dbFilePath)), false));
 
 
             Dictionary<string, Dictionary<string, int>> columnIndices = new Dictionary<string, Dictionary<string, int>>(StringComparer.OrdinalIgnoreCase);
             //Dictionary<string, SQLiteCommand> dbInsertCommandCache = new Dictionary<string, SQLiteCommand>(StringComparer.OrdinalIgnoreCase);
-
+            string fileDate = "2020-04-06 06:00:00";
             //EamInfoParser.ExtractNeList()
             var model = ModelConverter.Convert(modelPath);
-
+            //datadatetime,ossid,motype,parametername,type
+            foreach (var item in model.Keys)
+            {
+                foreach (var itemmoc in model[item].Mocs.Keys)
+                {
+                    foreach (var itematt in model[item].Mocs[itemmoc].KeyAttributes)
+                    {
+                        streamWriter[2].Write("{0}\t{1}\t{2}\t{3}\t{4}\n",
+                            fileDate,
+                            "46",
+                            "\\N",
+                             string.IsNullOrWhiteSpace(itematt.OMCName) ? "\\N" : itematt.OMCName,
+                            string.IsNullOrWhiteSpace(itematt.type) ? "\\N" : itematt.type);
+                    }
+                    foreach (var itematt in model[item].Mocs[itemmoc].NorAttributes)
+                    {
+                        streamWriter[2].Write("{0}\t{1}\t{2}\t{3}\t{4}\n",
+                            fileDate,
+                            "46",
+                            "\\N",
+                            string.IsNullOrWhiteSpace(itematt.OMCName) ? "\\N" : itematt.OMCName,
+                            string.IsNullOrWhiteSpace(itematt.type) ? "\\N" : itematt.type);
+                    }
+                }
+            }
+            
 
             var nodeList = EamInfoParser.ExtractNeList(Path.Combine(modelPath, "EAMInfo.xml"));
 
@@ -72,7 +97,8 @@ namespace GExportToKVP
             streamWriter[0].Close();
             streamWriter[1].Flush();
             streamWriter[1].Close();
-
+            streamWriter[2].Flush();
+            streamWriter[2].Close();
         }
     }
 }

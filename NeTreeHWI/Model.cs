@@ -58,6 +58,8 @@ namespace GExportToKVP
         public string OMCName { get; set; }
         public string mmlDisNameId { get; set; }
         public Boolean IsString { get; set; }
+
+        public string type { get; set; }
     }
 
 
