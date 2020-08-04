@@ -72,7 +72,7 @@ namespace GExportToKVP
                             xmlReader.ReadToDescendant("NeTypeName");
                             model.NeTypeName = xmlReader.ReadElementContentAsString();
                             model.Version = xmlReader.ReadElementContentAsString();
-
+                            model.Path = file;
                             xmlReader.ReadToFollowing("MocDefs");
 
                             xmlReader.Read();
@@ -107,7 +107,7 @@ namespace GExportToKVP
                     continue;
                 }
             }
- 
+
             return modelDic;
 
         }
@@ -134,7 +134,7 @@ namespace GExportToKVP
             xmlReader.ReadStartElement();
             if (xmlReader.HasAttributes)
             {
-                while (xmlReader.Name == "KeyAttribute" || xmlReader.Name == "NorAttribute")
+                while ((xmlReader.Name == "KeyAttribute" && IsKey == true) || (xmlReader.Name == "NorAttribute" && IsKey == false))
                 {
                     Attribute att = new Attribute();
 
@@ -150,7 +150,7 @@ namespace GExportToKVP
                         att.IsString = match.Groups[1].Value == "string";
                         att.type = match.Groups[1].Value;
                     }
-                    if (IsKey == true && att.OMCName != "OBJID")
+                    if (att.OMCName != "OBJID")
                         attList.Add(att);
                 }
                 xmlReader.ReadEndElement();

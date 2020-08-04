@@ -47,8 +47,7 @@ namespace GExportToKVP
                 {
                     string className = xmlReader.GetAttribute("name");
                     if (removeClassNameSuffix)
-                    {
-                        className = className.Split('_')[0];
+                    {                        className = className.Split('_')[0];
                     }
                     xmlReader.Read();
                     if (string.Equals(xmlReader.Name, "object", StringComparison.Ordinal))
@@ -99,7 +98,7 @@ namespace GExportToKVP
                                     Boolean key = false;
                                     string pimoname = "NA";
                                     string motype = "NA";
-
+                                    string paramvaluetype = "\\N";
 
 
                                     // foreach (var item in models.Keys.Where(a => a.Contains("OSS_BTS3900_MATCH_ENG_V300R019C10SPC210")))
@@ -119,7 +118,10 @@ namespace GExportToKVP
                                         }
                                         neName = moc.NeName;
                                         omcName = moc.OMCName;
-
+                                        if (moc.NorAttributes.Any(a => a.name == parameter.Key))
+                                            paramvaluetype = moc.NorAttributes.FirstOrDefault(a => a.name == parameter.Key).type ;
+                                        paramvaluetype = paramvaluetype == null ? "\\N" : paramvaluetype;
+                                        //if (paramvaluetype != "\\N") { }
                                         var searchTree = model.ModelTree.Descendants().Where(node => node.Name == omcName);
                                         var searchTreeItem = searchTree.FirstOrDefault();
                                         if (searchTreeItem != null)
@@ -145,7 +147,9 @@ namespace GExportToKVP
                                     //Console.WriteLine($"NeName:{neName} omcName:{omcName} NEType{neType} Key:{key}");
                                     //TSV prefered to help Click House importer 
                                     //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
-                                    streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
+                                    //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,nevendorid,neversion,vsmoname,pimoname,motype,paramname,paramvalue (new)
+                                    //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,nevendorid,neversion,vsmoname,pimoname,motype,paramname,paramvalue,paramvaluetype (new 2)
+                                    streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
                                     //streamWriter.Write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n",
                                                         fileDate,
                                                         "\\N",
@@ -154,11 +158,14 @@ namespace GExportToKVP
                                                         "\\N",
                                                         "\\N",
                                                         ossid,
+                                                        4,//hwi vednor id
+                                                        eamNE.Version,
                                                         vsmoname,
                                                         pimoname,
                                                         motype,
                                                         parameter.Key,
-                                                        parameter.Value);
+                                                        parameter.Value,
+                                                        paramvaluetype);
 
                                 }
                             }
@@ -173,19 +180,22 @@ namespace GExportToKVP
                 int level = item.Count(a => a == '→');
                 if (level == 0)
                     continue;
-
+                //if (level == 1) { }
                 string parentpimoname = string.Join("→", item.Split('→').ToArray<string>().Take(item.Count(a => a == '→')));
 
                 //CMTREE => datadatetime,ossid,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype,vsmoname
-                streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\n",
+                //CMTREE => datadatetime,ossid,nevendorid,neversion,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype,vsmoname
+                streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
                    fileDate,
                    ossid,
+                   4,//hwi
+                   eamNE.Version,
                    eamNE == null ? "" : eamNE.Folder,//netopologyfolder
                    item.Split('→')[item.Count(a => a == '→')].Split('=')[0],//treeelementclass
                    level,
                    level > 1 ? parentpimoname : "",//parentpimoname
                    item,//pimoname
-                   item.Split('→')[item.Count(a => a == '→')],//displayvsmoname
+                   level == 1 ? item.Split('→')[item.Count(a => a == '→') - 1] : item.Split('→')[item.Count(a => a == '→')],//displayvsmoname
                    string.Join(",", item.Split('→').Select(a => a.Split('=')[0]).ToArray<string>()),
                    pimonameDic[item] //vsmoname 
                    );
