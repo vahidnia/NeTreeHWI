@@ -73,6 +73,64 @@ namespace GExportToKVP
                             model.NeTypeName = xmlReader.ReadElementContentAsString();
                             model.Version = xmlReader.ReadElementContentAsString();
                             model.Path = file;
+
+                            if (xmlReader.LocalName == "ExternalTypes")
+                            {
+                                xmlReader.Read();
+                                while (xmlReader.Name == "Enum" || xmlReader.LocalName == "BitDomain" )
+                                {
+                                    try
+                                    {
+                                        ExternalTypesEnum exTypeEnum = new ExternalTypesEnum();
+                                        exTypeEnum.BasicId = xmlReader.GetAttribute("basicId");
+                                        exTypeEnum.dispUse = xmlReader.GetAttribute("dispUse");
+                                        exTypeEnum.Name = xmlReader.GetAttribute("name");
+                                        exTypeEnum.mmlUse = xmlReader.GetAttribute("mmlUse");
+                                        xmlReader.Read();
+                                        while (xmlReader.LocalName == "EnumItem")
+                                        {
+                                            exTypeEnum.ExternalTypesEnumItemList.Add(new ExternalTypesEnumItem()
+                                            {
+                                                desId = (xmlReader.GetAttribute("desId")),
+                                                name = xmlReader.GetAttribute("name"),
+                                                Value = (xmlReader.GetAttribute("value"))
+                                            });
+                                            xmlReader.Read();
+                                        }
+
+                                        while (xmlReader.LocalName == "BitEnumItem")
+                                        {
+                                            exTypeEnum.ExternalTypesBitEnumItemList.Add(new ExternalTypesBitEnumItem()
+                                            {
+                                                desId = (xmlReader.GetAttribute("desId")),
+                                                name = xmlReader.GetAttribute("name"),
+                                                index = (xmlReader.GetAttribute("index"))
+                                            });
+                                            xmlReader.Read();
+                                        }
+
+                                        //if (xmlReader.LocalName == "Sequence")
+                                        //{
+                                        //    exTypeEnum.ExternalTypesBitEnumItemList.Add(new ExternalTypesBitEnumItem()
+                                        //    {
+                                        //        desId = (xmlReader.GetAttribute("desId")),
+                                        //        name = xmlReader.GetAttribute("name"),
+                                        //        index = (xmlReader.GetAttribute("index"))
+                                        //    });
+                                        //    xmlReader.Read();
+                                        //}
+
+                                        model.ExternalTypesEnums.Add(exTypeEnum.Name.ToUpper(), exTypeEnum);
+                                        xmlReader.Read();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine(ex.ToString());
+                                    }
+                                }
+                            }
+
+
                             xmlReader.ReadToFollowing("MocDefs");
 
                             xmlReader.Read();
@@ -80,12 +138,14 @@ namespace GExportToKVP
                             while (xmlReader.Name == "Moc")
                             {
                                 Moc moc = new Moc();
-                                ReadMocs(xmlReader, level, moc);
+                                ReadMocs(xmlReader, level, moc, model.ExternalTypesEnums);
                                 model.Mocs.Add(moc.NeName.ToUpper(), moc);
                                 xmlReader.Read();
                             }
-
-                            model.DisplayVersion = NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).FirstOrDefault().DisplayVersion;
+                            if (NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).Any())
+                                model.DisplayVersion = NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).FirstOrDefault().DisplayVersion;
+                            else
+                                Console.WriteLine("Unable to find version");
                         }
                         catch (Exception ex)
                         {
@@ -113,7 +173,7 @@ namespace GExportToKVP
         }
 
 
-        private static void ReadMocs(XmlReader xmlReader, int level, Moc moc)
+        private static void ReadMocs(XmlReader xmlReader, int level, Moc moc, Dictionary<string, ExternalTypesEnum> externalTypesEnum)
         {
             moc.name = xmlReader.GetAttribute("name");
             moc.NeName = xmlReader.GetAttribute("NeName");
@@ -123,13 +183,13 @@ namespace GExportToKVP
             moc.type = xmlReader.GetAttribute("type");
 
             xmlReader.ReadToDescendant("KeyAttrGroup");
-            ReadAttrGroup(xmlReader, moc.KeyAttributes, true);
+            ReadAttrGroup(xmlReader, moc.KeyAttributes, true, externalTypesEnum);
             //xmlReader.ReadToFollowing("AttributeGroup");
-            ReadAttrGroup(xmlReader, moc.NorAttributes, false);
+            ReadAttrGroup(xmlReader, moc.NorAttributes, false, externalTypesEnum);
 
         }
 
-        private static void ReadAttrGroup(XmlReader xmlReader, List<Attribute> attList, Boolean IsKey)
+        private static void ReadAttrGroup(XmlReader xmlReader, List<Attribute> attList, Boolean IsKey, Dictionary<string, ExternalTypesEnum> externalTypesEnum)
         {
             xmlReader.ReadStartElement();
             if (xmlReader.HasAttributes)
@@ -149,6 +209,26 @@ namespace GExportToKVP
                     {
                         att.IsString = match.Groups[1].Value == "string";
                         att.type = match.Groups[1].Value;
+                    }
+                    else
+                    {
+                        var match2 = Regex.Match(xmlInnet, @"name=\""(?<name>.+?)\""");
+                        if (match2.Success)
+                        {
+                            att.IsString = match.Groups[1].Value == "string";
+                            string exEnumName = match2.Groups[1].Value.ToUpper();
+                            att.ExternalRef = exEnumName;
+                            if (externalTypesEnum.ContainsKey(exEnumName))
+                                att.type = "enum(" + externalTypesEnum[exEnumName].BasicId + ")";
+                            else if (exEnumName == "IPV4")
+                                att.type = "string";
+                            else //structs 
+                                att.type = "string";
+                            
+                        }
+                        else
+                        { }
+
                     }
                     if (att.OMCName != "OBJID")
                         attList.Add(att);

@@ -12,6 +12,7 @@ namespace GExportToKVP
         public Model()
         {
             Mocs = new Dictionary<string, Moc>();
+            ExternalTypesEnums = new Dictionary<string, ExternalTypesEnum>();
         }
         public string NeTypeName { get; set; }
         public string Version { get; set; }
@@ -26,7 +27,7 @@ namespace GExportToKVP
 
         public string DisplayVersion { get; set; }
         public Dictionary<string, Moc> Mocs { get; set; }
-
+        public Dictionary<string, ExternalTypesEnum> ExternalTypesEnums { get; set; }
         public string Path { get; set; }
     }
 
@@ -62,7 +63,39 @@ namespace GExportToKVP
         public Boolean IsString { get; set; }
 
         public string type { get; set; }
+
+        public string ExternalRef { get; set; }
     }
 
+    public class ExternalTypesEnum
+    {
+        public ExternalTypesEnum()
+        {
+            ExternalTypesEnumItemList = new List<ExternalTypesEnumItem>();
+            ExternalTypesBitEnumItemList = new List<ExternalTypesBitEnumItem>();
+        }
+        public string Name { get; set; }
+        public string BasicId { get; set; }
+        public string dispUse { get; set; }
+        public string mmlUse { get; set; }
+        public List<ExternalTypesEnumItem> ExternalTypesEnumItemList { get; set; }
+        public List<ExternalTypesBitEnumItem> ExternalTypesBitEnumItemList { get; set; }
+    }
 
+    public class ExternalTypesEnumItem
+    {
+        // name="OFF" value="0" desId="0"/>
+        public string name { get; set; }
+        public string desId { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class ExternalTypesBitEnumItem
+    {
+        //<BitEnumItem name="TS21" index="21" desId="247"/>
+        public string name { get; set; }
+        // name="OFF" value="0" desId="0"/>
+        public string index { get; set; }
+        public string desId { get; set; }
+    }
 }

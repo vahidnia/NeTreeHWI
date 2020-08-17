@@ -47,7 +47,8 @@ namespace GExportToKVP
                 {
                     string className = xmlReader.GetAttribute("name");
                     if (removeClassNameSuffix)
-                    {                        className = className.Split('_')[0];
+                    {
+                        className = className.Split('_')[0];
                     }
                     xmlReader.Read();
                     if (string.Equals(xmlReader.Name, "object", StringComparison.Ordinal))
@@ -55,35 +56,12 @@ namespace GExportToKVP
                         while (string.Equals(xmlReader.Name, "object", StringComparison.Ordinal))
                         {
                             XElement xObject = (XElement)XNode.ReadFrom(xmlReader);
-                            Dictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { { "NE", ne } };
+                            Dictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                             foreach (XElement xParameter in xObject.Elements("parameter"))
                             {
                                 string parameterName = xParameter.Attribute("name").Value;
                                 string parameterValue = xParameter.Attribute("value").Value;
                                 parameters.Add(parameterName, parameterValue);
-                                bool isSwitchParameter =
-                                    parameterValue.EndsWith("SW-0") ||
-                                    parameterValue.EndsWith("SW-1") ||
-                                    parameterValue.EndsWith("SWITCH-0") ||
-                                    parameterValue.EndsWith("SWITCH-1") ||
-                                    // handle CAALGOSWITCH having value INTRA_BAND_CA_SW-0 in NRDUCELLALGOSWITCH_BTS59005G
-                                    (parameterName.EndsWith("SWITCH", StringComparison.OrdinalIgnoreCase) && (parameterValue.EndsWith("-0", StringComparison.Ordinal) || parameterValue.EndsWith("-1", StringComparison.Ordinal))) ||
-                                    // handle SRSCOORDSCHSW having value UL_SRSCOORDSCH_SW-0 in NRDUCELLSRS_BTS59005G
-                                    (parameterName.EndsWith("SW", StringComparison.OrdinalIgnoreCase) && (parameterValue.EndsWith("_SW-0", StringComparison.OrdinalIgnoreCase) || parameterValue.EndsWith("_SW-1", StringComparison.OrdinalIgnoreCase)));
-                                bool needToSplitParameter =
-                                    isSwitchParameter &&
-                                    !parameterName.StartsWith("RSVSWITCH", StringComparison.Ordinal) &&
-                                    !parameterName.StartsWith("RSVDPARA", StringComparison.Ordinal);
-                                if (needToSplitParameter)
-                                {
-                                    foreach (string parameterSwitch in parameterValue.Split('&'))
-                                    {
-                                        string[] parameterSwitchNameAndValue = parameterSwitch.Split('-');
-                                        string parameterSwitchName = parameterSwitchNameAndValue[0];
-                                        string parameterSwitchValue = parameterSwitchNameAndValue[1];
-                                        parameters.Add(parameterName + "." + parameterSwitchName, parameterSwitchValue);
-                                    }
-                                }
                             }
                             if (parameters.Count > 1) // > 1 because NE is always there
                             {
@@ -99,11 +77,12 @@ namespace GExportToKVP
                                     string pimoname = "NA";
                                     string motype = "NA";
                                     string paramvaluetype = "\\N";
+                                    string paramValue = parameter.Value;
 
+                                    Dictionary<string, string> switchparameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                                     // foreach (var item in models.Keys.Where(a => a.Contains("OSS_BTS3900_MATCH_ENG_V300R019C10SPC210")))
                                     foreach (var item in models.Values.Where(a => a.DisplayVersion == version))
-
                                     {
                                         //var model = models[item];
                                         var model = item;
@@ -111,6 +90,7 @@ namespace GExportToKVP
                                             continue;
                                         var moc = model.Mocs[className.ToUpper()];
 
+                                        //Console.WriteLine()
                                         if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
                                         {
                                             key = true;
@@ -118,8 +98,59 @@ namespace GExportToKVP
                                         }
                                         neName = moc.NeName;
                                         omcName = moc.OMCName;
-                                        if (moc.NorAttributes.Any(a => a.name == parameter.Key))
-                                            paramvaluetype = moc.NorAttributes.FirstOrDefault(a => a.name == parameter.Key).type ;
+
+                                        bool needToSplitParameter = false;
+
+                                        if (moc.NorAttributes.Any(a => a.OMCName == parameter.Key))
+                                        {
+                                            bool isEnum = false;
+                                            var att = moc.NorAttributes.FirstOrDefault(a => a.OMCName == parameter.Key);
+                                            var fileType = att.type;
+                                            if (CHType.CHTypesDic.ContainsKey(fileType))
+                                                paramvaluetype = CHType.CHTypesDic[fileType];
+                                            else
+                                                paramvaluetype = fileType;
+
+                                            if (paramvaluetype.Contains("enum"))
+                                                isEnum = true;
+
+                                            needToSplitParameter = (parameter.Value.Contains("-1&") || parameter.Value.Contains("-0&")) && isEnum;
+                                            if (att.ExternalRef != "" && att.ExternalRef != "IPV4" && att.ExternalRef != null && needToSplitParameter == false)
+                                            {
+                                                if (model.ExternalTypesEnums.ContainsKey(att.ExternalRef))
+                                                {
+                                                    if (model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.Count > 0)
+                                                        paramValue = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.FirstOrDefault(a => a.name == parameter.Value).Value;
+                                                    else
+                                                        paramValue = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesBitEnumItemList.FirstOrDefault(a => a.name == parameter.Value.Split('-')[0]).index;
+                                                }
+                                                else { }
+
+                                            }
+                                            
+
+                                        }
+                                        else
+                                        { if (parameter.Key != "NE") { Console.WriteLine(parameter.Key); continue; } }
+
+
+
+
+                                        if (needToSplitParameter)
+                                        {
+                                            foreach (string parameterSwitch in parameter.Value.Split('&'))
+                                            {
+                                                string[] parameterSwitchNameAndValue = parameterSwitch.Split('-');
+                                                string parameterSwitchName = parameterSwitchNameAndValue[0];
+                                                string parameterSwitchValue = parameterSwitchNameAndValue[1];
+                                                switchparameters.Add(parameter.Key + "." + parameterSwitchName, parameterSwitchValue);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            switchparameters.Add(parameter.Key, paramValue);
+                                        }
+
                                         paramvaluetype = paramvaluetype == null ? "\\N" : paramvaluetype;
                                         //if (paramvaluetype != "\\N") { }
                                         var searchTree = model.ModelTree.Descendants().Where(node => node.Name == omcName);
@@ -137,36 +168,37 @@ namespace GExportToKVP
 
                                     if (key || parameter.Key == "NE" || pimoname == "NA")
                                         continue;
-                                    if (pimoname.Split('→')[pimoname.Count(a => a == '→')].Contains("LIOPTRULE"))
-                                    { }
 
-                                    if (!pimonameDic.ContainsKey(pimoname))
-                                        pimonameDic.Add(pimoname, vsmoname);
+                                    foreach (var paramaterex in switchparameters)
+                                    {
+                                        if (!pimonameDic.ContainsKey(pimoname))
+                                            pimonameDic.Add(pimoname, vsmoname);
 
-                                    //→
-                                    //Console.WriteLine($"NeName:{neName} omcName:{omcName} NEType{neType} Key:{key}");
-                                    //TSV prefered to help Click House importer 
-                                    //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
-                                    //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,nevendorid,neversion,vsmoname,pimoname,motype,paramname,paramvalue (new)
-                                    //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,nevendorid,neversion,vsmoname,pimoname,motype,paramname,paramvalue,paramvaluetype (new 2)
-                                    streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
-                                    //streamWriter.Write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n",
-                                                        fileDate,
-                                                        "\\N",
-                                                        "\\N",
-                                                        "\\N",
-                                                        "\\N",
-                                                        "\\N",
-                                                        ossid,
-                                                        4,//hwi vednor id
-                                                        eamNE.Version,
-                                                        vsmoname,
-                                                        pimoname,
-                                                        motype,
-                                                        parameter.Key,
-                                                        parameter.Value,
-                                                        paramvaluetype);
+                                        //→
+                                        //Console.WriteLine($"NeName:{neName} omcName:{omcName} NEType{neType} Key:{key}");
+                                        //TSV prefered to help Click House importer 
+                                        //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
+                                        //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,nevendorid,neversion,vsmoname,pimoname,motype,paramname,paramvalue (new)
+                                        //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,nevendorid,neversion,vsmoname,pimoname,motype,paramname,paramvalue,paramvaluetype (new 2)
+                                        streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
+                                                            //streamWriter.Write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n",
+                                                            fileDate,
+                                                            "\\N",
+                                                            "\\N",
+                                                            "\\N",
+                                                            "\\N",
+                                                            "\\N",
+                                                            ossid,
+                                                            4,//hwi vednor id
+                                                            eamNE.Version,
+                                                            vsmoname,
+                                                            pimoname,
+                                                            motype,
+                                                            paramaterex.Key,
+                                                            paramaterex.Value,
+                                                            paramvaluetype);
 
+                                    }
                                 }
                             }
                         }
