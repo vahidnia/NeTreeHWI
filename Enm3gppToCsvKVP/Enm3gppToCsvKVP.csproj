@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ProjectGuid>{CC92F873-800C-4A4D-89FD-A19B070D6437}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>enm3gpp2csvkvp</AssemblyName>
+    <TargetFramework>net462</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyTitle>enm3gpp2sqlite</AssemblyTitle>
+    <Company>P.I. Works Inc. (www.piworks.net)</Company>
+    <Product>enm3gpp2sqlite</Product>
+    <Copyright>Copyright © P.I. Works Inc. 2017</Copyright>
+    <Prefer32Bit>false</Prefer32Bit>
+    <RootNamespace>Enm3gppToCsvKVP</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="costura32\**" />
+    <Compile Remove="costura64\**" />
+    <EmbeddedResource Remove="costura32\**" />
+    <EmbeddedResource Remove="costura64\**" />
+    <None Remove="costura32\**" />
+    <None Remove="costura64\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="./obj" />
+    <Compile Remove="./bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PIWorks.Base.Log4netWrapper" Version="6.0.0.27" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Data.SQLite">
+      <HintPath>..\packages\System.Data.SQLite.Core.1.0.112.0\lib\net46\System.Data.SQLite.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="rd /s /q &quot;$(TargetDir)/x86&quot;&#xD;&#xA;rd /s /q &quot;$(TargetDir)/x64&quot;" />
+  </Target>
+</Project>
