@@ -91,28 +91,34 @@ namespace GExportToKVP
                                         var moc = model.Mocs[className.ToUpper()];
 
                                         //Console.WriteLine()
-                                        if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
+                                        // if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
+                                        if (moc.Attributes.ContainsKey(parameter.Key))
                                         {
-                                            key = true;
-                                            continue;
+                                            if (moc.Attributes[parameter.Key].IsKeyAttribute)
+                                            {
+                                                key = true;
+                                                break;
+                                            }
                                         }
                                         neName = moc.NeName;
                                         omcName = moc.OMCName;
 
                                         bool needToSplitParameter = false;
 
-                                        if (moc.NorAttributes.Any(a => a.OMCName == parameter.Key))
+                                        if (moc.Attributes.ContainsKey(parameter.Key))
                                         {
                                             bool isEnum = false;
-                                            var att = moc.NorAttributes.FirstOrDefault(a => a.OMCName == parameter.Key);
+                                            var att = moc.Attributes[parameter.Key];
                                             var fileType = att.type;
+                                            if (fileType.Contains("enum"))
+                                                isEnum = true;
+
                                             if (CHType.CHTypesDic.ContainsKey(fileType))
                                                 paramvaluetype = CHType.CHTypesDic[fileType];
                                             else
                                                 paramvaluetype = fileType;
 
-                                            if (paramvaluetype.Contains("enum"))
-                                                isEnum = true;
+                                         
 
                                             needToSplitParameter = (parameter.Value.Contains("-1&") || parameter.Value.Contains("-0&")) && isEnum;
                                             if (att.ExternalRef != "" && att.ExternalRef != "IPV4" && att.ExternalRef != null && needToSplitParameter == false)
@@ -120,19 +126,38 @@ namespace GExportToKVP
                                                 if (model.ExternalTypesEnums.ContainsKey(att.ExternalRef))
                                                 {
                                                     if (model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.Count > 0)
-                                                        paramValue = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.FirstOrDefault(a => a.name == parameter.Value).Value;
+                                                    {
+                                                        var pv = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.FirstOrDefault(a => a.name == parameter.Value);
+                                                        if (pv == null)
+                                                        {
+                                                            paramValue = parameter.Value;
+                                                            Console.WriteLine(parameter.Key);
+                                                        }
+                                                        else
+                                                            paramValue = pv.Value;
+                                                    }
                                                     else
                                                         paramValue = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesBitEnumItemList.FirstOrDefault(a => a.name == parameter.Value.Split('-')[0]).index;
                                                 }
-                                                else { }
-
+                                                else
+                                                {
+                                                    //mayne this is struct and we are not processing it 
+                                                }
                                             }
-                                            
+
 
                                         }
                                         else
-                                        { if (parameter.Key != "NE") { Console.WriteLine(parameter.Key); continue; } }
+                                        /// { if (parameter.Key != "NE") { Console.WriteLine(parameter.Key); continue; } }
+                                        {
+                                            if (parameter.Key != "NE" && parameter.Key != "OBJID")
+                                            {
 
+                                                //Console.WriteLine("param not find in mode: " + parameter.Key);
+                                                //Console.WriteLine(model.Path);
+                                                continue;
+                                            }
+                                        }
 
 
 
@@ -166,7 +191,7 @@ namespace GExportToKVP
                                         }
                                     }
 
-                                    if (key || parameter.Key == "NE" || pimoname == "NA")
+                                    if (key || parameter.Key == "NE" || pimoname == "NA" || parameter.Key == "OBJID")
                                         continue;
 
                                     foreach (var paramaterex in switchparameters)

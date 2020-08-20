@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,8 +37,9 @@ namespace GExportToKVP
 
         public Moc()
         {
-            KeyAttributes = new List<Attribute>();
-            NorAttributes = new List<Attribute>();
+            //KeyAttributes = new List<Attribute>();
+            //NorAttributes = new List<Attribute>();
+            Attributes = new Dictionary<string, Attribute>();
         }
         public string name { get; set; }
         public string NeName { get; set; }
@@ -45,8 +47,10 @@ namespace GExportToKVP
         public string isVirtual { get; set; }
         public string category { get; set; }
         public string type { get; set; }
-        public List<Attribute> KeyAttributes { get; set; }
-        public List<Attribute> NorAttributes { get; set; }
+        //public List<Attribute> KeyAttributes { get; set; }
+        //public List<Attribute> NorAttributes { get; set; }
+
+        public Dictionary<string, Attribute> Attributes { get; set; }
 
     }
 
@@ -65,6 +69,8 @@ namespace GExportToKVP
         public string type { get; set; }
 
         public string ExternalRef { get; set; }
+
+        public Boolean IsKeyAttribute { get; set; }
     }
 
     public class ExternalTypesEnum

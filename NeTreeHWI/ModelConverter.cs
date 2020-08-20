@@ -73,11 +73,11 @@ namespace GExportToKVP
                             model.NeTypeName = xmlReader.ReadElementContentAsString();
                             model.Version = xmlReader.ReadElementContentAsString();
                             model.Path = file;
-
+                            //Console.WriteLine(file);
                             if (xmlReader.LocalName == "ExternalTypes")
                             {
                                 xmlReader.Read();
-                                while (xmlReader.Name == "Enum" || xmlReader.LocalName == "BitDomain" )
+                                while (xmlReader.Name == "Enum" || xmlReader.LocalName == "BitDomain")
                                 {
                                     try
                                     {
@@ -182,64 +182,74 @@ namespace GExportToKVP
             moc.category = xmlReader.GetAttribute("category");
             moc.type = xmlReader.GetAttribute("type");
 
-            xmlReader.ReadToDescendant("KeyAttrGroup");
-            ReadAttrGroup(xmlReader, moc.KeyAttributes, true, externalTypesEnum);
+            //xmlReader.ReadToDescendant("KeyAttrGroup");
+            //ReadAttrGroup(xmlReader, moc.KeyAttributes, true, externalTypesEnum);
             //xmlReader.ReadToFollowing("AttributeGroup");
-            ReadAttrGroup(xmlReader, moc.NorAttributes, false, externalTypesEnum);
+            //ReadAttrGroup(xmlReader, moc.NorAttributes, false, externalTypesEnum);
 
+            ReadAttrGroup(xmlReader, moc.Attributes, externalTypesEnum);
         }
 
-        private static void ReadAttrGroup(XmlReader xmlReader, List<Attribute> attList, Boolean IsKey, Dictionary<string, ExternalTypesEnum> externalTypesEnum)
+        private static void ReadAttrGroup(XmlReader xmlReader, Dictionary<string, Attribute> attList, Dictionary<string, ExternalTypesEnum> externalTypesEnum)
+        {
+            if (xmlReader.IsEmptyElement == false)
+            {
+                xmlReader.Read();
+                if (xmlReader.LocalName == "KeyAttrGroup" && xmlReader.IsEmptyElement == false)
+                    getAtt(xmlReader, attList, externalTypesEnum);
+                xmlReader.Read();
+                if (xmlReader.LocalName == "AttributeGroup" && xmlReader.IsEmptyElement == false)
+                    getAtt(xmlReader, attList, externalTypesEnum);
+                xmlReader.Read();
+
+                if (attList.Count == 0) { }
+            }
+        }
+
+        private static void getAtt(XmlReader xmlReader, Dictionary<string, Attribute> attList, Dictionary<string, ExternalTypesEnum> externalTypesEnum)
         {
             xmlReader.ReadStartElement();
-            if (xmlReader.HasAttributes)
+            while ((xmlReader.Name == "KeyAttribute") || (xmlReader.Name == "NorAttribute"))
             {
-                while ((xmlReader.Name == "KeyAttribute" && IsKey == true) || (xmlReader.Name == "NorAttribute" && IsKey == false))
+                Attribute att = new Attribute();
+
+                att.IsKeyAttribute = (xmlReader.Name == "KeyAttribute");
+                att.name = xmlReader.GetAttribute("name");
+                att.NeName = xmlReader.GetAttribute("NeName");
+                att.OMCName = xmlReader.GetAttribute("OMCName");
+                att.mmlDisNameId = xmlReader.GetAttribute("mmlDisNameId");
+
+                var xmlInnet = xmlReader.ReadInnerXml();
+                var match = Regex.Match(xmlInnet, @"basicId=""(?<type>\w+)""");
+                if (match.Success)
                 {
-                    Attribute att = new Attribute();
-
-                    att.name = xmlReader.GetAttribute("name");
-                    att.NeName = xmlReader.GetAttribute("NeName");
-                    att.OMCName = xmlReader.GetAttribute("OMCName");
-                    att.mmlDisNameId = xmlReader.GetAttribute("mmlDisNameId");
-
-                    var xmlInnet = xmlReader.ReadInnerXml();
-                    var match = Regex.Match(xmlInnet, @"basicId=""(?<type>\w+)""");
-                    if (match.Success)
+                    att.IsString = match.Groups[1].Value == "string";
+                    att.type = match.Groups[1].Value;
+                }
+                else
+                {
+                    var match2 = Regex.Match(xmlInnet, @"name=\""(?<name>.+?)\""");
+                    if (match2.Success)
                     {
                         att.IsString = match.Groups[1].Value == "string";
-                        att.type = match.Groups[1].Value;
+                        string exEnumName = match2.Groups[1].Value.ToUpper();
+                        att.ExternalRef = exEnumName;
+                        if (externalTypesEnum.ContainsKey(exEnumName))
+                            att.type = "enum(" + externalTypesEnum[exEnumName].BasicId + ")";
+                        else if (exEnumName == "IPV4")
+                            att.type = "string";
+                        else //structs 
+                            att.type = "string";
+
                     }
                     else
-                    {
-                        var match2 = Regex.Match(xmlInnet, @"name=\""(?<name>.+?)\""");
-                        if (match2.Success)
-                        {
-                            att.IsString = match.Groups[1].Value == "string";
-                            string exEnumName = match2.Groups[1].Value.ToUpper();
-                            att.ExternalRef = exEnumName;
-                            if (externalTypesEnum.ContainsKey(exEnumName))
-                                att.type = "enum(" + externalTypesEnum[exEnumName].BasicId + ")";
-                            else if (exEnumName == "IPV4")
-                                att.type = "string";
-                            else //structs 
-                                att.type = "string";
-                            
-                        }
-                        else
-                        { }
+                    { }
 
-                    }
-                    if (att.OMCName != "OBJID")
-                        attList.Add(att);
                 }
-                xmlReader.ReadEndElement();
+                if (att.OMCName != "OBJID")
+                    attList.Add(att.OMCName, att);
             }
-            else
-            { }
         }
-
-
     }
 
 

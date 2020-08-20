@@ -45,7 +45,7 @@ namespace GExportToKVP
                 return this.Name + "=" + ne;
 
             string ppmoname = Parent.GetPiMoname(mocs, parameters, existingAtt, ne, out vsmoname);
-            if(ppmoname.Contains("BTS3900=AGCIS→NE→NODE→TRANSPORT")) { }
+            if (ppmoname.Contains("BTS3900=AGCIS→NE→NODE→TRANSPORT")) { }
             vsmoname = "";
             if (mocs.ContainsKey(this.Name.ToUpper()))
             {
@@ -58,14 +58,14 @@ namespace GExportToKVP
                 //    existingAtt.Add(item.Key);
 
 
-                foreach (var item in mocs[this.Name].KeyAttributes)
+                foreach (var item in mocs[this.Name].Attributes.Where(a => a.Value.IsKeyAttribute == true))
                 {
-                    if (parameters.ContainsKey(item.OMCName))
-                        if (!existingAtt.Contains(item.OMCName))
+                    if (parameters.ContainsKey(item.Key))
+                        if (!existingAtt.Contains(item.Key))
                         {
-                            att += string.Join(":", item.OMCName, parameters[item.OMCName]) + ",";
-                            vsmoname += string.Join("=", item.OMCName, item.IsString ? "\"" + parameters[item.OMCName] + "\"" : parameters[item.OMCName]) + ",";
-                            existingAtt.Add(item.OMCName);
+                            att += string.Join(":", item.Key, parameters[item.Key]) + ",";
+                            vsmoname += string.Join("=", item.Key, item.Value.IsString ? "\"" + parameters[item.Key] + "\"" : parameters[item.Key]) + ",";
+                            existingAtt.Add(item.Key);
                         }
                 }
                 att = att.TrimEnd(new char[] { ',' });
