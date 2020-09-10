@@ -118,7 +118,7 @@ namespace GExportToKVP
                                             else
                                                 paramvaluetype = fileType;
 
-                                         
+
 
                                             needToSplitParameter = (parameter.Value.Contains("-1&") || parameter.Value.Contains("-0&")) && isEnum;
                                             if (att.ExternalRef != "" && att.ExternalRef != "IPV4" && att.ExternalRef != null && needToSplitParameter == false)
@@ -178,10 +178,13 @@ namespace GExportToKVP
 
                                         paramvaluetype = paramvaluetype == null ? "\\N" : paramvaluetype;
                                         //if (paramvaluetype != "\\N") { }
-                                        var searchTree = model.ModelTree.Descendants().Where(node => node.Name == omcName);
-                                        var searchTreeItem = searchTree.FirstOrDefault();
-                                        if (searchTreeItem != null)
+                                        //var searchTreeItem = model.ModelTree.Descendants().FirstOrDefault(node => node.Name == omcName);
+
+                                        //var searchTreeItem = searchTree.FirstOrDefault();
+                                        //if (searchTreeItem != null)
+                                        if (model.FlattenTree.ContainsKey(omcName))
                                         {
+                                            var searchTreeItem = model.FlattenTree[omcName];
                                             HashSet<string> exsitingAtt = new HashSet<string>();
                                             pimoname = searchTreeItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne, out vsmoname);
                                             //vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));

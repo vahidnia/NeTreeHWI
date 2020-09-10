@@ -160,6 +160,7 @@ namespace GExportToKVP
                 if (tree != null)
                 {
                     model.ModelTree = tree;
+                    model.DescendantsTree();
                 }
                 else
                 {

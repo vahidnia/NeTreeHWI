@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PIWorks.Base.Collections;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -19,7 +20,7 @@ namespace Enm3gppToCsvKVP
         private const int MonameColumnIndex = 1;
         private const string MimNameColumnName = "mimName";
         private const int MimNameColumnIndex = 2;
-        private const string ArraySeparator = "|";
+        private const string ArraySeparator = "ǁ";
 
         private const string ReservedByColumnName = "reservedBy";
         private const string AttributesColumnName = "attributes";
@@ -86,6 +87,7 @@ namespace Enm3gppToCsvKVP
         private static void ProcessAttributes(
             XmlReader xmlReader,
             List<KeyValuePair<string, string>> attributes,
+            Dictionary<string, List<int>> attributesLevel,
             string baseAttributeName = null)
         {
             while (xmlReader.IsStartElement())
@@ -110,6 +112,12 @@ namespace Enm3gppToCsvKVP
                 else
                 {
                     xmlReader.ReadStartElement();
+
+
+                    if (!attributesLevel.ContainsKey(attributeName))
+                        attributesLevel.Add(attributeName, new List<int>());
+                    attributesLevel[attributeName].Add(string.IsNullOrEmpty(baseAttributeName) ? 1 : 0);
+
                     if (xmlReader.NodeType == XmlNodeType.Text || xmlReader.NodeType == XmlNodeType.EndElement)
                     {
                         string attributeValue;
@@ -123,13 +131,16 @@ namespace Enm3gppToCsvKVP
                         }
                         if (attributePath.Contains("trafficModelPrb")) { }
                         attributes.Add(new KeyValuePair<string, string>(attributePath, attributeValue));
+
                     }
                     else
                     {
                         ProcessAttributes(
                             xmlReader,
                             attributes,
-                            attributePath);
+                            attributesLevel,
+                            attributePath
+                            );
                     }
                     xmlReader.ReadEndElement();
                 }
@@ -295,7 +306,7 @@ namespace Enm3gppToCsvKVP
                          ossid,
                          moname,
                          pimoname,
-                         "",
+                         "ManagedElement",
                          "pifiller-k",
                          "pifiller-v"
                          );
@@ -307,8 +318,8 @@ namespace Enm3gppToCsvKVP
                 xmlReader.ReadStartElement();
 
                 var attributes = new List<KeyValuePair<string, string>>();
-                ProcessAttributes(xmlReader, attributes);
-                if (attributes.Select(a => a.Key).Contains("trafficModelPrb")) { }
+                Dictionary<string, List<int>> attributesLevel = new Dictionary<string, List<int>>();
+                ProcessAttributes(xmlReader, attributes, attributesLevel);
                 currentObjectAttributes =
                     attributes.GroupBy(o => o.Key).ToDictionary(o => o.Key, o => string.Join(ArraySeparator, o.Select(r => r.Value)));
                 xmlReader.ReadEndElement();
@@ -336,9 +347,8 @@ namespace Enm3gppToCsvKVP
                     {
                         xmlReader.ReadStartElement(); // should point to first child of <??:{vsDataType}> after execution
                         var attributes = new List<KeyValuePair<string, string>>();
-
-                        ProcessAttributes(xmlReader, attributes);
-                        if (attributes.Select(a => a.Key).Contains("trafficModelPrb")) { }
+                        var attributesLevel = new Dictionary<string, List<int>>();
+                        ProcessAttributes(xmlReader, attributes, attributesLevel);
                         currentObjectAttributes =
                             attributes.GroupBy(o => o.Key).ToDictionary(o => o.Key, o => string.Join(ArraySeparator, o.Select(r => r.Value)));
                     }
@@ -416,6 +426,7 @@ namespace Enm3gppToCsvKVP
             // in the beginning xmlReader points to <??:VsDataContainer>
             // in the end xmlReader points right after the </??:vsDataContainer>
             Dictionary<string, string> currentObjectAttributes = new Dictionary<string, string>();
+            HashSet<string> arrayKeys = new HashSet<string>();
             if (id == null && mimName == null && vsDataType == null)
             {
                 id = xmlReader.GetAttribute("id");
@@ -435,8 +446,10 @@ namespace Enm3gppToCsvKVP
             {
                 xmlReader.ReadStartElement(); // should point to first child of <??:{vsDataType}> after execution
                 var attributes = new List<KeyValuePair<string, string>>();
-                ProcessAttributes(xmlReader, attributes);
-                if (attributes.Select(a => a.Key).Contains("trafficModelPrb")) { }
+                Dictionary<string, List<int>> attributesLevel = new Dictionary<string, List<int>>();
+
+                ProcessAttributes(xmlReader, attributes, attributesLevel);
+                arrayKeys = attributesLevel.Where(a => a.Value.Count > 1).Select(a => a.Key).ToHashSet<string>();
                 currentObjectAttributes =
                     attributes.GroupBy(o => o.Key).ToDictionary(o => o.Key, o => string.Join(ArraySeparator, o.Select(r => r.Value)));
             }
@@ -499,27 +512,37 @@ namespace Enm3gppToCsvKVP
 
                 string key = attribute.Key.Replace('\n', ' ').Replace('\t', ' ').Replace('\r', ' ').Replace("\\", "\\\\");
                 string value = attribute.Value.Replace('\n', ' ').Replace('\t', ' ').Replace('\r', ' ').Replace("\\", "\\\\");
-                if (value.Contains('|'))
+                if (value.Contains(ArraySeparator))
                 {
-                    int i = 0;
-                    foreach (var splitedValue in value.Split('|'))
+                    if (key.Contains('.'))
                     {
-                        //TSV prefered to help Click House importer 
-                        //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
-                        streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
-                            fileDateTime,
-                            "\\N",
-                            "\\N",
-                            "\\N",
-                            "\\N",
-                            "\\N",
-                            ossid,
-                            moname,
-                            pimoname,
-                            currentObjectFullType,
-                            $"{key}[{i++}]",
-                            splitedValue);
+                        var splittedArr = key.Split('.');
+                        var keySplitedBase = splittedArr[0];
+                        var keySplited = splittedArr[1];
+                        if (arrayKeys.Contains(keySplitedBase))
+                            key = $"{keySplitedBase}[].{keySplited}";
+                        else
+                            key = $"{keySplitedBase}.{keySplited}[]";
                     }
+                    else
+                        key = $"{key}[]";
+
+                    //TSV prefered to help Click House importer 
+                    //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
+                    streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
+                        fileDateTime,
+                        "\\N",
+                        "\\N",
+                        "\\N",
+                        "\\N",
+                        "\\N",
+                        ossid,
+                        moname,
+                        pimoname,
+                        currentObjectFullType,
+                        key,
+                        value);
+
                 }
                 else
                 {

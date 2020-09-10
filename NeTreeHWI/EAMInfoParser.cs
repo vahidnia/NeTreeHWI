@@ -95,13 +95,16 @@ namespace GExportToKVP
                         }
                     }
                 }
-                string folder = "";
+                List<string> folder = new List<string>();
+
                 if (ne.Subnet != null)
                     foreach (var item in ne.Subnet.Split('@'))
                         if (eamInfoDic.ContainsKey(item))
-                            folder += eamInfoDic[item].Item2 + "→";
+                            folder.Add(eamInfoDic[item].Item2);
 
-                ne.Folder = folder.TrimEnd('→');
+
+                folder.Reverse();
+                ne.Folder = string.Join("→", folder);
 
             }
 

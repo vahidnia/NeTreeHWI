@@ -30,6 +30,22 @@ namespace GExportToKVP
         public Dictionary<string, Moc> Mocs { get; set; }
         public Dictionary<string, ExternalTypesEnum> ExternalTypesEnums { get; set; }
         public string Path { get; set; }
+
+        public Dictionary<string, Tree> FlattenTree { get; set; }
+
+        public void DescendantsTree()
+        {
+            FlattenTree = new Dictionary<string, Tree>(); 
+            foreach (var item in this.ModelTree.Descendants())
+            {
+                string key = item.ToString().Split(',').Last();
+
+                if (FlattenTree.ContainsKey(key))
+                    Console.WriteLine($"key already exist in f-tree {key} \r\n {item} \r\n {FlattenTree[key]}");
+                else
+                    FlattenTree.Add(key, item);
+            }
+        }
     }
 
     public class Moc
