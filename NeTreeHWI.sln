@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GExportToKVP", "NeTreeHWI\G
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Enm3gppToCsvKVP", "Enm3gppToCsvKVP\Enm3gppToCsvKVP.csproj", "{CC92F873-800C-4A4D-89FD-A19B070D6437}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enm3gppToCsvKVPNetCore", "Enm3gppToCsvKVPNetCore\Enm3gppToCsvKVPNetCore.csproj", "{565367CB-A3AF-4E8B-BD7E-AC36168C9A34}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{CC92F873-800C-4A4D-89FD-A19B070D6437}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC92F873-800C-4A4D-89FD-A19B070D6437}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC92F873-800C-4A4D-89FD-A19B070D6437}.Release|Any CPU.Build.0 = Release|Any CPU
+		{565367CB-A3AF-4E8B-BD7E-AC36168C9A34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{565367CB-A3AF-4E8B-BD7E-AC36168C9A34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{565367CB-A3AF-4E8B-BD7E-AC36168C9A34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{565367CB-A3AF-4E8B-BD7E-AC36168C9A34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
