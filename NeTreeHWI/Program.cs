@@ -34,7 +34,8 @@ namespace GExportToKVP
 
             Dictionary<string, Dictionary<string, int>> columnIndices = new Dictionary<string, Dictionary<string, int>>(StringComparer.OrdinalIgnoreCase);
             //Dictionary<string, SQLiteCommand> dbInsertCommandCache = new Dictionary<string, SQLiteCommand>(StringComparer.OrdinalIgnoreCase);
-            string fileDate = "2020-04-06 06:00:00";
+
+
             //EamInfoParser.ExtractNeList()
             var model = ModelConverter.Convert(modelPath);
             //datadatetime,ossid,motype,parametername,type
@@ -62,7 +63,7 @@ namespace GExportToKVP
             //        }
             //    }
             //}
-            
+
 
             var nodeList = EamInfoParser.ExtractNeList(Path.Combine(modelPath, "EAMInfo.xml"));
 
@@ -72,6 +73,9 @@ namespace GExportToKVP
                 string fileName = Path.GetFileName(filePath);
                 string ne = Regex.Match(fileName, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
                 Console.WriteLine(fileName);
+                var dateRegex = Regex.Match(fileName, @"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)");
+
+                var dateTime = new DateTime(int.Parse(dateRegex.Groups[1].Value), int.Parse(dateRegex.Groups[2].Value), int.Parse(dateRegex.Groups[3].Value), 0, 0, 0).ToString("yyyy-MM-dd HH:mm:ss");
 
                 if (fileName.EndsWith(".gz"))
                 {
@@ -79,7 +83,7 @@ namespace GExportToKVP
                     {
                         using (Stream stream = new ICSharpCode.SharpZipLib.GZip.GZipInputStream(compressedStream))
                         {
-                            GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model, nodeList);
+                            GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model, nodeList, dateTime);
                         }
                     }
                 }
@@ -87,7 +91,7 @@ namespace GExportToKVP
                 {
                     using (FileStream stream = File.OpenRead(filePath))
                     {
-                        GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model, nodeList);
+                        GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model, nodeList, dateTime);
                     }
                 }
 
@@ -101,4 +105,4 @@ namespace GExportToKVP
             streamWriter[2].Close();
         }
     }
-}
+};

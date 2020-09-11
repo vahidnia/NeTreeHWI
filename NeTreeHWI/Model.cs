@@ -35,7 +35,7 @@ namespace GExportToKVP
 
         public void DescendantsTree()
         {
-            FlattenTree = new Dictionary<string, Tree>(); 
+            FlattenTree = new Dictionary<string, Tree>();
             foreach (var item in this.ModelTree.Descendants())
             {
                 string key = item.ToString().Split(',').Last();

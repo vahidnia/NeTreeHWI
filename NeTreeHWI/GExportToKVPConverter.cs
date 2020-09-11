@@ -16,10 +16,9 @@ namespace GExportToKVP
             List<StreamWriter> streamWriter,
             Dictionary<string, Dictionary<string, int>> columnIndices,
             Dictionary<string, Model> models,
-            List<EamNe> eamNElist)
+            List<EamNe> eamNElist, string fileDate)
         {
             Dictionary<string, string> pimonameDic = new Dictionary<string, string>();
-            string fileDate = "2020-04-06 06:00:00";
             var ossid = 46; //HAVA
             var eamNE = eamNElist.FirstOrDefault(a => a.NeName == ne);
 
@@ -179,7 +178,7 @@ namespace GExportToKVP
                                         paramvaluetype = paramvaluetype == null ? "\\N" : paramvaluetype;
                                         //if (paramvaluetype != "\\N") { }
                                         //var searchTreeItem = model.ModelTree.Descendants().FirstOrDefault(node => node.Name == omcName);
-
+            
                                         //var searchTreeItem = searchTree.FirstOrDefault();
                                         //if (searchTreeItem != null)
                                         if (model.FlattenTree.ContainsKey(omcName))

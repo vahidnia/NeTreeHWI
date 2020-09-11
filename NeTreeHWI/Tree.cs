@@ -45,7 +45,6 @@ namespace GExportToKVP
                 return this.Name + "=" + ne;
 
             string ppmoname = Parent.GetPiMoname(mocs, parameters, existingAtt, ne, out vsmoname);
-            if (ppmoname.Contains("BTS3900=AGCIS→NE→NODE→TRANSPORT")) { }
             vsmoname = "";
             if (mocs.ContainsKey(this.Name.ToUpper()))
             {
