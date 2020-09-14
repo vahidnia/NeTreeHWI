@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -72,6 +73,7 @@ namespace GExportToKVP
                                 foreach (KeyValuePair<string, string> parameter in parameters)
                                 {
                                     string vsmoname = "NA";
+                                    Dictionary<string, string> vsmonameDic = new Dictionary<string, string>();
                                     Boolean key = false;
                                     string pimoname = "NA";
                                     string motype = "NA";
@@ -178,16 +180,17 @@ namespace GExportToKVP
                                         paramvaluetype = paramvaluetype == null ? "\\N" : paramvaluetype;
                                         //if (paramvaluetype != "\\N") { }
                                         //var searchTreeItem = model.ModelTree.Descendants().FirstOrDefault(node => node.Name == omcName);
-            
+
                                         //var searchTreeItem = searchTree.FirstOrDefault();
                                         //if (searchTreeItem != null)
                                         if (model.FlattenTree.ContainsKey(omcName))
                                         {
                                             var searchTreeItem = model.FlattenTree[omcName];
                                             HashSet<string> exsitingAtt = new HashSet<string>();
-                                            pimoname = searchTreeItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne, out vsmoname);
+                                            vsmonameDic = new Dictionary<string, string>();
+                                            pimoname = searchTreeItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne, vsmonameDic);
                                             //vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
-                                            vsmoname = ne + "/" + className + (string.IsNullOrWhiteSpace(vsmoname) ? "" : ":" + vsmoname);
+                                            vsmoname = ne + "/" + className + (vsmonameDic.Count == 0 ? "" : "=" + string.Join(",", vsmonameDic.Select(a => a.Key + ":" + a.Value)));
                                             motype = searchTreeItem.Getmotype();
                                             break;
                                         }
