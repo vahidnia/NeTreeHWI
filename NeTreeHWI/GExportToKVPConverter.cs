@@ -74,7 +74,6 @@ namespace GExportToKVP
                                 {
                                     string vsmoname = "NA";
                                     Dictionary<string, string> vsmonameDic = new Dictionary<string, string>();
-                                    Boolean key = false;
                                     string pimoname = "NA";
                                     string motype = "NA";
                                     string paramvaluetype = "\\N";
@@ -93,14 +92,7 @@ namespace GExportToKVP
 
                                         //Console.WriteLine()
                                         // if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
-                                        if (moc.Attributes.ContainsKey(parameter.Key))
-                                        {
-                                            if (moc.Attributes[parameter.Key].IsKeyAttribute)
-                                            {
-                                                key = true;
-                                                break;
-                                            }
-                                        }
+                                     
                                         neName = moc.NeName;
                                         omcName = moc.OMCName;
 
@@ -196,7 +188,7 @@ namespace GExportToKVP
                                         }
                                     }
 
-                                    if (key || parameter.Key == "NE" || pimoname == "NA" || parameter.Key == "OBJID")
+                                    if (parameter.Key == "NE" || pimoname == "NA" || parameter.Key == "OBJID")
                                         continue;
 
                                     foreach (var paramaterex in switchparameters)
