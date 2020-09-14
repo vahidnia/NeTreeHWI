@@ -34,8 +34,9 @@ namespace GExportToKVP
                 neVersion.NermVersion = (lines.Count() > 6 && !string.IsNullOrWhiteSpace(lines[6])) ? lines[6].Split('=')[1] : "NA";
                 neVersion.SoftVersion = (lines.Count() > 7 && !string.IsNullOrWhiteSpace(lines[7])) ? lines[7].Split('=')[1] : "NA";
                 neVersion.FilePath = item;
-                if (!NeVersionDic.ContainsKey(lines[1].Split('=')[1]))
-                    NeVersionDic.Add(lines[1].Split('=')[1], neVersion);
+                string key = neVersion.NeVersion;
+                if (!NeVersionDic.ContainsKey(key))
+                    NeVersionDic.Add(key, neVersion);
                 else
                     Console.WriteLine(item);
 
@@ -145,7 +146,11 @@ namespace GExportToKVP
                             if (NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).Any())
                                 model.DisplayVersion = NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).FirstOrDefault().DisplayVersion;
                             else
+                            {
+                                
+                                Console.WriteLine(string.Join("\\", files[file].Split('\\').Take(2)));
                                 Console.WriteLine("Unable to find version");
+                            }
                         }
                         catch (Exception ex)
                         {

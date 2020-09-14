@@ -35,6 +35,7 @@ namespace GExportToKVP
                 xmlReader.ReadToDescendant("bulkCmConfigDataFile");
                 xmlReader.ReadToDescendant("configData");
                 xmlReader.ReadToDescendant("class");
+                string mainClassName = xmlReader.GetAttribute("name");
                 xmlReader.ReadToDescendant("object"); // TODO: extract 'technique'?
 
                 string version = xmlReader.GetAttribute("version");
@@ -81,112 +82,109 @@ namespace GExportToKVP
 
                                     Dictionary<string, string> switchparameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-                                    // foreach (var item in models.Keys.Where(a => a.Contains("OSS_BTS3900_MATCH_ENG_V300R019C10SPC210")))
-                                    foreach (var item in models.Values.Where(a => a.DisplayVersion == version))
+                                    var model = models.Values.FirstOrDefault(a => a.DisplayVersion == version && a.NeTypeName == mainClassName);
+
+                                    if (!model.Mocs.ContainsKey(className.ToUpper()))
+                                        continue;
+                                    var moc = model.Mocs[className.ToUpper()];
+
+                                    //Console.WriteLine()
+                                    // if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
+
+                                    neName = moc.NeName;
+                                    omcName = moc.OMCName;
+
+                                    bool needToSplitParameter = false;
+
+                                    if (moc.Attributes.ContainsKey(parameter.Key))
                                     {
-                                        //var model = models[item];
-                                        var model = item;
-                                        if (!model.Mocs.ContainsKey(className.ToUpper()))
-                                            continue;
-                                        var moc = model.Mocs[className.ToUpper()];
+                                        bool isEnum = false;
+                                        var att = moc.Attributes[parameter.Key];
+                                        var fileType = att.type;
+                                        if (fileType.Contains("enum"))
+                                            isEnum = true;
 
-                                        //Console.WriteLine()
-                                        // if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
-                                     
-                                        neName = moc.NeName;
-                                        omcName = moc.OMCName;
+                                        if (CHType.CHTypesDic.ContainsKey(fileType))
+                                            paramvaluetype = CHType.CHTypesDic[fileType];
+                                        else
+                                            paramvaluetype = fileType;
 
-                                        bool needToSplitParameter = false;
 
-                                        if (moc.Attributes.ContainsKey(parameter.Key))
+
+                                        needToSplitParameter = (parameter.Value.Contains("-1&") || parameter.Value.Contains("-0&")) && isEnum;
+                                        if (att.ExternalRef != "" && att.ExternalRef != "IPV4" && att.ExternalRef != null && needToSplitParameter == false)
                                         {
-                                            bool isEnum = false;
-                                            var att = moc.Attributes[parameter.Key];
-                                            var fileType = att.type;
-                                            if (fileType.Contains("enum"))
-                                                isEnum = true;
-
-                                            if (CHType.CHTypesDic.ContainsKey(fileType))
-                                                paramvaluetype = CHType.CHTypesDic[fileType];
-                                            else
-                                                paramvaluetype = fileType;
-
-
-
-                                            needToSplitParameter = (parameter.Value.Contains("-1&") || parameter.Value.Contains("-0&")) && isEnum;
-                                            if (att.ExternalRef != "" && att.ExternalRef != "IPV4" && att.ExternalRef != null && needToSplitParameter == false)
+                                            if (model.ExternalTypesEnums.ContainsKey(att.ExternalRef))
                                             {
-                                                if (model.ExternalTypesEnums.ContainsKey(att.ExternalRef))
+                                                if (model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.Count > 0)
                                                 {
-                                                    if (model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.Count > 0)
+                                                    var pv = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.FirstOrDefault(a => a.name == parameter.Value);
+                                                    if (pv == null)
                                                     {
-                                                        var pv = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.FirstOrDefault(a => a.name == parameter.Value);
-                                                        if (pv == null)
-                                                        {
-                                                            paramValue = parameter.Value;
-                                                            Console.WriteLine(parameter.Key);
-                                                        }
-                                                        else
-                                                            paramValue = pv.Value;
+                                                        paramValue = parameter.Value;
+                                                        Console.WriteLine(parameter.Key);
                                                     }
                                                     else
-                                                        paramValue = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesBitEnumItemList.FirstOrDefault(a => a.name == parameter.Value.Split('-')[0]).index;
+                                                        paramValue = pv.Value;
                                                 }
                                                 else
-                                                {
-                                                    //mayne this is struct and we are not processing it 
-                                                }
+                                                    paramValue = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesBitEnumItemList.FirstOrDefault(a => a.name == parameter.Value.Split('-')[0]).index;
                                             }
-
-
-                                        }
-                                        else
-                                        /// { if (parameter.Key != "NE") { Console.WriteLine(parameter.Key); continue; } }
-                                        {
-                                            if (parameter.Key != "NE" && parameter.Key != "OBJID")
+                                            else
                                             {
-
-                                                //Console.WriteLine("param not find in mode: " + parameter.Key);
-                                                //Console.WriteLine(model.Path);
-                                                continue;
+                                                //mayne this is struct and we are not processing it 
                                             }
                                         }
 
 
-
-                                        if (needToSplitParameter)
+                                    }
+                                    else
+                                    /// { if (parameter.Key != "NE") { Console.WriteLine(parameter.Key); continue; } }
+                                    {
+                                        if (parameter.Key != "NE" && parameter.Key != "OBJID")
                                         {
-                                            foreach (string parameterSwitch in parameter.Value.Split('&'))
-                                            {
-                                                string[] parameterSwitchNameAndValue = parameterSwitch.Split('-');
-                                                string parameterSwitchName = parameterSwitchNameAndValue[0];
-                                                string parameterSwitchValue = parameterSwitchNameAndValue[1];
-                                                switchparameters.Add(parameter.Key + "." + parameterSwitchName, parameterSwitchValue);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            switchparameters.Add(parameter.Key, paramValue);
-                                        }
 
-                                        paramvaluetype = paramvaluetype == null ? "\\N" : paramvaluetype;
-                                        //if (paramvaluetype != "\\N") { }
-                                        //var searchTreeItem = model.ModelTree.Descendants().FirstOrDefault(node => node.Name == omcName);
-
-                                        //var searchTreeItem = searchTree.FirstOrDefault();
-                                        //if (searchTreeItem != null)
-                                        if (model.FlattenTree.ContainsKey(omcName))
-                                        {
-                                            var searchTreeItem = model.FlattenTree[omcName];
-                                            HashSet<string> exsitingAtt = new HashSet<string>();
-                                            vsmonameDic = new Dictionary<string, string>();
-                                            pimoname = searchTreeItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne, vsmonameDic);
-                                            //vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
-                                            vsmoname = ne + "/" + className + (vsmonameDic.Count == 0 ? "" : "=" + string.Join(",", vsmonameDic.Select(a => a.Key + ":" + a.Value)));
-                                            motype = searchTreeItem.Getmotype();
-                                            break;
+                                            //Console.WriteLine("param not find in mode: " + parameter.Key);
+                                            //Console.WriteLine(model.Path);
+                                            continue;
                                         }
                                     }
+
+
+
+                                    if (needToSplitParameter)
+                                    {
+                                        foreach (string parameterSwitch in parameter.Value.Split('&'))
+                                        {
+                                            string[] parameterSwitchNameAndValue = parameterSwitch.Split('-');
+                                            string parameterSwitchName = parameterSwitchNameAndValue[0];
+                                            string parameterSwitchValue = parameterSwitchNameAndValue[1];
+                                            switchparameters.Add(parameter.Key + "." + parameterSwitchName, parameterSwitchValue);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        switchparameters.Add(parameter.Key, paramValue);
+                                    }
+
+                                    paramvaluetype = paramvaluetype == null ? "\\N" : paramvaluetype;
+                                    //if (paramvaluetype != "\\N") { }
+                                    //var searchTreeItem = model.ModelTree.Descendants().FirstOrDefault(node => node.Name == omcName);
+
+                                    //var searchTreeItem = searchTree.FirstOrDefault();
+                                    //if (searchTreeItem != null)
+                                    if (model.FlattenTree.ContainsKey(omcName))
+                                    {
+                                        var searchTreeItem = model.FlattenTree[omcName];
+                                        HashSet<string> exsitingAtt = new HashSet<string>();
+                                        vsmonameDic = new Dictionary<string, string>();
+                                        pimoname = searchTreeItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne, vsmonameDic);
+                                        //vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
+                                        vsmoname = ne + "/" + className + (vsmonameDic.Count == 0 ? "" : "=" + string.Join(",", vsmonameDic.Select(a => a.Key + ":" + a.Value)));
+                                        motype = searchTreeItem.Getmotype();
+                                        break;
+                                    }
+
 
                                     if (parameter.Key == "NE" || pimoname == "NA" || parameter.Key == "OBJID")
                                         continue;

@@ -41,7 +41,8 @@ namespace GExportToKVP
                 string key = item.ToString().Split(',').Last();
 
                 if (FlattenTree.ContainsKey(key))
-                    Console.WriteLine($"key already exist in f-tree {key} \r\n {item} \r\n {FlattenTree[key]}");
+                { //Console.WriteLine($"key already exist in f-tree {key} \r\n {item} \r\n {FlattenTree[key]}"); 
+                }
                 else
                     FlattenTree.Add(key, item);
             }
