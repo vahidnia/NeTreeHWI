@@ -26,7 +26,7 @@ namespace Enm3gppToCsvKVP
         private const string AttributesColumnName = "attributes";
 
 
-        public static void Convert(string inputFilePath, string dbFilePath, string ossid, IEnumerable<string> moTypeFilter)
+        public static void Convert(string inputFilePath, string dbFilePath, string ossid, Dictionary<string, Boolean> moTypeFilter)
         {
             using (FileStream fileStream = File.Open(inputFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
@@ -47,7 +47,7 @@ namespace Enm3gppToCsvKVP
             }
         }
 
-        public static void Convert(Stream stream, string csv, string ossid, IEnumerable<string> moTypeFilter, string fileDateTime)
+        public static void Convert(Stream stream, string csv, string ossid, Dictionary<string, Boolean> moTypeFilter, string fileDateTime)
         {
             using (XmlReader xmlReader = XmlReader.Create(stream, new XmlReaderSettings { IgnoreWhitespace = true, IgnoreComments = true, IgnoreProcessingInstructions = true, CheckCharacters = false, ValidationFlags = XmlSchemaValidationFlags.None }))
             {
@@ -152,7 +152,7 @@ namespace Enm3gppToCsvKVP
             XmlReader xmlReader,
             List<KeyValuePair<string, string>> path,
             List<KeyValuePair<string, string>> ossPrefixes,
-            IEnumerable<string> moTypeFilter,
+            Dictionary<string, Boolean> moTypeFilter,
             List<StreamWriter> streamWriter,
             string fileDateTime)
         {
@@ -416,7 +416,7 @@ namespace Enm3gppToCsvKVP
             XmlReader xmlReader,
             List<KeyValuePair<string, string>> path,
             List<KeyValuePair<string, string>> ossPrefixes,
-            IEnumerable<string> moTypeFilter,
+            Dictionary<string, Boolean> moTypeFilter,
             List<StreamWriter> streamWriter,
             string fileDateTime,
             string id = null,
@@ -526,42 +526,49 @@ namespace Enm3gppToCsvKVP
                     }
                     else
                         key = $"{key}[]";
-
-                    //TSV prefered to help Click House importer 
-                    //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
-                    streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
-                        fileDateTime,
-                        "\\N",
-                        "\\N",
-                        "\\N",
-                        "\\N",
-                        "\\N",
-                        ossid,
-                        moname,
-                        pimoname,
-                        currentObjectFullType,
-                        key,
-                        value);
-
                 }
                 else
                 {
-                    //TSV prefered to help Click House importer 
-                    //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
-                    streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
-                        fileDateTime,
-                        "\\N",
-                        "\\N",
-                        "\\N",
-                        "\\N",
-                        "\\N",
-                        ossid,
-                        moname,
-                        pimoname,
-                        currentObjectFullType,
-                        key,
-                        value);
+                    Boolean isArrayParam1 = false, isArrayParam2 = false;
+                    if (key.Contains('.'))
+                    {
+                        var p1 = key.Split('.')[0];
+                        var p2 = key.Split('.')[1];
+
+                        Boolean p1Find = moTypeFilter.TryGetValue(p1, out isArrayParam1);
+                        Boolean p2Find = moTypeFilter.TryGetValue(p2, out isArrayParam2);
+
+                        p1 += isArrayParam1 ? "[]" : "";
+                        p2 += isArrayParam2 ? "[]" : "";
+                        key = $"{p1}.{p2}";
+                    }
+                    else
+                    {
+
+                        moTypeFilter.TryGetValue(key, out isArrayParam1);
+                        key += isArrayParam1 ? "[]" : "";
+                    }
+                   // if (isArrayParam1 || isArrayParam2) { }
                 }
+
+
+
+                //TSV prefered to help Click House importer 
+                //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
+                streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
+                    fileDateTime,
+                    "\\N",
+                    "\\N",
+                    "\\N",
+                    "\\N",
+                    "\\N",
+                    ossid,
+                    moname,
+                    pimoname,
+                    currentObjectFullType,
+                    key,
+                    value);
+
             }
 
             while (xmlReader.IsStartElement())
