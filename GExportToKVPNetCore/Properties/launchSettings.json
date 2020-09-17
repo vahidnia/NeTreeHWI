@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GExportToKVPNetCore": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\temp\\TC_CM_HWI\\sample\\new\\  *.* C:\\working\\CM\\HWI\\HWI.CM.csv C:\\!working\\CM\\HWI\\model  46"
+    }
+  }
+}

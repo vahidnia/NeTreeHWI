@@ -17,7 +17,7 @@ namespace GExportToKVP
             List<StreamWriter> streamWriter,
             Dictionary<string, Dictionary<string, int>> columnIndices,
             Dictionary<string, Model> models,
-            List<EamNe> eamNElist, string fileDate , string ossid)
+            List<EamNe> eamNElist, string fileDate, string ossid)
         {
             Dictionary<string, string> pimonameDic = new Dictionary<string, string>();
             var eamNE = eamNElist.FirstOrDefault(a => a.NeName == ne);

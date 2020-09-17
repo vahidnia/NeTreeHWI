@@ -26,23 +26,23 @@ namespace Enm3gppToCsvKVP
         private const string AttributesColumnName = "attributes";
 
 
-        public static void Convert(string inputFilePath, string dbFilePath, string ossid, Dictionary<string, Boolean> moTypeFilter)
+        public static void Convert(string inputFilePath, string dbFilePath, string ossId, Dictionary<string, Boolean> model)
         {
             using (FileStream fileStream = File.Open(inputFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                string dateStr = System.Text.RegularExpressions.Regex.Match(inputFilePath, @"\d\d\d\d-\d\d-\d\dT\d\d-\d\d-\d\d").Value;
-                string FileDateTime = dateStr.Substring(0, dateStr.IndexOf('T')) + " " + dateStr.Substring(dateStr.IndexOf('T') + 1, 8).Replace('-', ':');
+                string strDate = System.Text.RegularExpressions.Regex.Match(inputFilePath, @"\d\d\d\d-\d\d-\d\dT\d\d-\d\d-\d\d").Value;
+                string fileDateTime = strDate.Substring(0, strDate.IndexOf('T')) + " " + strDate.Substring(strDate.IndexOf('T') + 1, 8).Replace('-', ':');
 
                 if (inputFilePath.EndsWith(".gz") || inputFilePath.EndsWith(".zip"))
                 {
                     using (GZipStream decompressedStream = new GZipStream(fileStream, CompressionMode.Decompress))
                     {
-                        Convert(decompressedStream, dbFilePath, ossid, moTypeFilter, FileDateTime);
+                        Convert(decompressedStream, dbFilePath, ossId, model, fileDateTime);
                     }
                 }
                 else
                 {
-                    Convert(fileStream, dbFilePath, ossid, moTypeFilter, FileDateTime);
+                    Convert(fileStream, dbFilePath, ossId, model, fileDateTime);
                 }
             }
         }
