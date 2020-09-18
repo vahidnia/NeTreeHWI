@@ -94,14 +94,14 @@ namespace GExportToKVP
                         GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model, nodeList, dateTime, ossid);
                     }
                 }
+                streamWriter[0].Flush();
+                streamWriter[1].Flush();
+                streamWriter[2].Flush();
 
             }
 
-            streamWriter[0].Flush();
             streamWriter[0].Close();
-            streamWriter[1].Flush();
             streamWriter[1].Close();
-            streamWriter[2].Flush();
             streamWriter[2].Close();
         }
     }

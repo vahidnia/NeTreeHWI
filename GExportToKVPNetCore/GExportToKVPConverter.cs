@@ -81,11 +81,14 @@ namespace GExportToKVP
 
                                     Dictionary<string, string> switchparameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-                                    //var model = models.Values.FirstOrDefault(a => a.DisplayVersion == version && a.NeTypeName == mainClassName);
-                                    foreach (var model in models.Values.Where(a => a.DisplayVersion == version && a.NeTypeName == mainClassName))
+                                    var model = models.Values.Where(a => a.DisplayVersion == version && a.NeTypeName == mainClassName).FirstOrDefault(a => a.Mocs.ContainsKey(className.ToUpper()));
+
+                                    //foreach (var model in models.Values.Where(a => a.DisplayVersion == version && a.NeTypeName == mainClassName))
+
+                                    if (model != null)
                                     {
-                                        if (!model.Mocs.ContainsKey(className.ToUpper()))
-                                            continue;
+                                        //if (!model.Mocs.ContainsKey(className.ToUpper()))
+                                        //    continue;
                                         var moc = model.Mocs[className.ToUpper()];
 
                                         //Console.WriteLine()
@@ -146,7 +149,7 @@ namespace GExportToKVP
 
                                                 //Console.WriteLine("param not find in mode: " + parameter.Key);
                                                 //Console.WriteLine(model.Path);
-                                                continue;
+                                                //continue;
                                             }
                                         }
 
@@ -182,8 +185,14 @@ namespace GExportToKVP
                                             //vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
                                             vsmoname = ne + "/" + className + (vsmonameDic.Count == 0 ? "" : "=" + string.Join(",", vsmonameDic.Select(a => a.Key + ":" + a.Value)));
                                             motype = searchTreeItem.Getmotype();
-                                            break;
+                                            //break;
                                         }
+                                    }
+                                    else
+                                    {
+                                        //Console.WriteLine("node model find for this param");
+                                        //Console.WriteLine(parameter);
+                                        continue;
                                     }
 
                                     if (parameter.Key == "NE" || pimoname == "NA" || parameter.Key == "OBJID")

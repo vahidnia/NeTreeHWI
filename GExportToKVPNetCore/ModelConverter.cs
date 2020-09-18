@@ -157,8 +157,8 @@ namespace GExportToKVP
                             Console.WriteLine(file);
                         }
                     }
-                    if (!modelDic.ContainsKey(files[file]))
-                        modelDic.Add(files[file], model);
+
+                    modelDic.Add(files[file], model);
                 }
                 string ne = Regex.Match(file, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
                 var tree = NeTreeConverter.Convert(neTreeFilePath, ne);

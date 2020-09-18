@@ -11,7 +11,7 @@ namespace GExportToKVP
     internal static class NeTreeConverter
     {
 
-        public static Tree Convert(string path,string neName)
+        public static Tree Convert(string path, string neName)
         {
             Tree tree = new Tree();
             try
