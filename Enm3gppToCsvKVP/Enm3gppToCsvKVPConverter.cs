@@ -155,7 +155,6 @@ namespace Enm3gppToCsvKVP
                         {
                             attributeValue = string.Empty;
                         }
-                        if (attributePath.Contains("trafficModelPrb")) { }
                         attributes.Add(new KeyValuePair<string, string>(attributePath, attributeValue));
 
                     }
@@ -282,15 +281,15 @@ namespace Enm3gppToCsvKVP
                     pimoname = string.Join("→", ossPrefix.Replace(',', '→'), pimoname);
 
 
-                string displayvsmoname = xmlReader.LocalName + "=" + xmlReader.GetAttribute("id");
+                string displayvsmoname = currentObjectType + "=" + id;
                 string netopologyfolder = string.Join("→", ossPrefixes.Take(ossPrefixes.Count - 1).Select(o => $"{o.Key}={o.Value}"));
-                string vsDataType = xmlReader.LocalName;
+                string vsDataType = currentObjectType;
 
                 // cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
                 streamWriter[1].Write(string.Join("\t", fileDateTime, ossid, netopologyfolder, vsDataType, level++, parent, pimoname, displayvsmoname, string.Empty, moname));
                 streamWriter[1].Write("\n");
 
-                parent = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + xmlReader.LocalName.Replace("\\", "\\\\") + "=" + xmlReader.GetAttribute("id").Replace("\\", "\\\\");
+                parent = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + displayvsmoname;
 
                 //cmdata => {datadatetime},{pk1},{pk2},{pk3},{pk4},{clid},{ossid},{vsmoname},{pimoname},{motype},{paramname},{paramvalue}
                 streamWriter[0].Write(string.Join("\t", fileDateTime, "\\N", "\\N", "\\N", "\\N", "\\N", ossid, moname, pimoname, "ManagedElement", "pifiller-k", "pifiller-v"));
