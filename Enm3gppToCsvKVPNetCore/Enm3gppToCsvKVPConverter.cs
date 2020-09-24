@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Schema;
 
@@ -23,28 +24,52 @@ namespace Enm3gppToCsvKVPNetCore
         private const string AttributesColumnName = "attributes";
 
 
-        public static void Convert(string inputFilePath, string dbFilePath, string ossid, Dictionary<string, Boolean> moTypeFilter)
+        public static void Convert(string inputFilePath, string dbFilePath, string ossId, string modelPath)
         {
             using (FileStream fileStream = File.Open(inputFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                string dateStr = System.Text.RegularExpressions.Regex.Match(inputFilePath, @"\d\d\d\d-\d\d-\d\dT\d\d-\d\d-\d\d").Value;
-                string FileDateTime = dateStr.Substring(0, dateStr.IndexOf('T')) + " " + dateStr.Substring(dateStr.IndexOf('T') + 1, 8).Replace('-', ':');
+                string strDate = System.Text.RegularExpressions.Regex.Match(inputFilePath, @"\d\d\d\d-\d\d-\d\dT\d\d-\d\d-\d\d").Value;
+                string fileDateTime = strDate.Substring(0, strDate.IndexOf('T')) + " " + strDate.Substring(strDate.IndexOf('T') + 1, 8).Replace('-', ':');
+                var model = ExtractModel(modelPath);
 
                 if (inputFilePath.EndsWith(".gz") || inputFilePath.EndsWith(".zip"))
                 {
                     using (GZipStream decompressedStream = new GZipStream(fileStream, CompressionMode.Decompress))
                     {
-                        Convert(decompressedStream, dbFilePath, ossid, moTypeFilter, FileDateTime);
+                        Convert(decompressedStream, dbFilePath, ossId, model, fileDateTime);
                     }
                 }
                 else
                 {
-                    Convert(fileStream, dbFilePath, ossid, moTypeFilter, FileDateTime);
+                    Convert(fileStream, dbFilePath, ossId, model, fileDateTime);
                 }
             }
         }
 
-        public static void Convert(Stream stream, string csv, string ossid, Dictionary<string, Boolean> moTypeFilter, string fileDateTime)
+        private static Dictionary<string, bool> ExtractModel(string modelPath)
+        {
+            Dictionary<string, Boolean> attDataType = new Dictionary<string, Boolean>();
+            foreach (var item in Directory.GetFiles(modelPath, "*MODEL*.xml"))
+                ProcessModel(attDataType, item);
+
+            foreach (var item in Directory.GetFiles(modelPath, "*com*.xml"))
+                ProcessModel(attDataType, item);
+            return attDataType;
+        }
+
+        private static void ProcessModel(Dictionary<string, bool> attDataType, string item)
+        {
+            Match match = Regex.Match(File.ReadAllText(item), @"<attribute\sname=\""(?<attname>\w+)\"">.+?<dataType>(?<dataType>.+?)</dataType>", RegexOptions.Singleline);
+            while (match.Success)
+            {
+                var isArray = match.Groups["dataType"].Value.Contains("<sequence>");
+                if (!attDataType.ContainsKey(match.Groups["attname"].Value))
+                    attDataType.Add(match.Groups["attname"].Value, isArray);
+                match = match.NextMatch();
+            }
+        }
+
+        public static void Convert(Stream stream, string csv, string ossid, Dictionary<string, Boolean> model, string fileDateTime)
         {
             using (XmlReader xmlReader = XmlReader.Create(stream, new XmlReaderSettings { IgnoreWhitespace = true, IgnoreComments = true, IgnoreProcessingInstructions = true, CheckCharacters = false, ValidationFlags = XmlSchemaValidationFlags.None }))
             {
@@ -71,9 +96,10 @@ namespace Enm3gppToCsvKVPNetCore
                         xmlReader,
                         path,
                         ossPrefixes,
-                        moTypeFilter,
+                        model,
                         streamWriter,
                         fileDateTime);
+
                 streamWriter[0].Flush();
                 streamWriter[0].Close();
                 streamWriter[1].Flush();
@@ -126,7 +152,6 @@ namespace Enm3gppToCsvKVPNetCore
                         {
                             attributeValue = string.Empty;
                         }
-                        if (attributePath.Contains("trafficModelPrb")) { }
                         attributes.Add(new KeyValuePair<string, string>(attributePath, attributeValue));
 
                     }
@@ -167,39 +192,21 @@ namespace Enm3gppToCsvKVPNetCore
                     {
                         if (string.IsNullOrWhiteSpace(parent))
                         {
+                            string netopologyfolder = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}"));
+                            string vsDataType = xmlReader.LocalName;
+                            string pimoname = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + xmlReader.LocalName + "=" + xmlReader.GetAttribute("id");
+                            string displayvsmoname = xmlReader.LocalName + "=" + xmlReader.GetAttribute("id");
+                            string moname = xmlReader.LocalName + "=" + xmlReader.GetAttribute("id");
 
-                            //CMTREE
-                            // datadatetime,ossid,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype,vsmoname
-                            streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\n",
-                                     fileDateTime,
-                                     ossid,
-                                     string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")),
-                                     xmlReader.LocalName,
-                                     level++,
-                                     parent,
-                                     string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + xmlReader.LocalName + "=" + xmlReader.GetAttribute("id"),
-                                     xmlReader.LocalName + "=" + xmlReader.GetAttribute("id"),
-                                     "",
-                                     xmlReader.LocalName + "=" + xmlReader.GetAttribute("id"));
+                            // cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
+                            streamWriter[1].Write(string.Join("\t", fileDateTime, ossid, netopologyfolder, vsDataType, level++, parent, pimoname, displayvsmoname, string.Empty, moname));
+                            streamWriter[1].Write("\n");
 
                             parent = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + xmlReader.LocalName + "=" + xmlReader.GetAttribute("id");
-
                         }
                         else
                         {
-                            streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
-                                        fileDateTime,
-                                        ossid,
-                                        string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")),
-                                        xmlReader.LocalName,
-                                        level++,
-                                        parent,
-                                        parent + "→" + xmlReader.LocalName + "=" + xmlReader.GetAttribute("id"),
-                                        parent + "→" + xmlReader.LocalName + "=" + xmlReader.GetAttribute("id"),
-                                        "");
-
-                            parent = parent + "→" + xmlReader.LocalName + "=" + xmlReader.GetAttribute("id");
-
+                            throw new Exception("Parent is not empty for <MeContext>");
                         }
                     }
 
@@ -271,42 +278,20 @@ namespace Enm3gppToCsvKVPNetCore
                     pimoname = string.Join("→", ossPrefix.Replace(',', '→'), pimoname);
 
 
-                string displayvsmoname = string.Join(",", path.Last().Key + "=" + path.Last().Value);
+                string displayvsmoname = currentObjectType + "=" + id;
                 string netopologyfolder = string.Join("→", ossPrefixes.Take(ossPrefixes.Count - 1).Select(o => $"{o.Key}={o.Value}"));
+                string vsDataType = currentObjectType;
 
+                // cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
+                streamWriter[1].Write(string.Join("\t", fileDateTime, ossid, netopologyfolder, vsDataType, level++, parent, pimoname, displayvsmoname, string.Empty, moname));
+                streamWriter[1].Write("\n");
 
-                //CMTREE
-                // datadatetime,ossid,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype,vsmoname
-                streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\n",
-                         fileDateTime,
-                         ossid,
-                         netopologyfolder,
-                         xmlReader.LocalName,
-                         level++,
-                         parent,
-                         pimoname,
-                         xmlReader.LocalName + "=" + xmlReader.GetAttribute("id"),
-                         "",
-                         moname);
+                parent = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + displayvsmoname;
 
-                parent = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + xmlReader.LocalName.Replace("\\", "\\\\") + "=" + xmlReader.GetAttribute("id").Replace("\\", "\\\\");
+                //cmdata => {datadatetime},{ossid},{vsmoname},{pimoname},{motype},{paramname},{paramvalue}
+                streamWriter[0].Write(string.Join("\t", fileDateTime, ossid, moname, pimoname, "ManagedElement", "pifiller-k", "pifiller-v"));
+                streamWriter[0].Write("\n");
 
-                //CMDATA dummy insert for pifiller
-                //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
-                streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
-                         fileDateTime,
-                         "\\N",
-                         "\\N",
-                         "\\N",
-                         "\\N",
-                         "\\N",
-                         ossid,
-                         moname,
-                         pimoname,
-                         "ManagedElement",
-                         "pifiller-k",
-                         "pifiller-v"
-                         );
             }
 
             xmlReader.ReadStartElement();
@@ -413,7 +398,7 @@ namespace Enm3gppToCsvKVPNetCore
             XmlReader xmlReader,
             List<KeyValuePair<string, string>> path,
             List<KeyValuePair<string, string>> ossPrefixes,
-            Dictionary<string, Boolean> moTypeFilter,
+            Dictionary<string, Boolean> model,
             List<StreamWriter> streamWriter,
             string fileDateTime,
             string id = null,
@@ -468,44 +453,18 @@ namespace Enm3gppToCsvKVPNetCore
             string displayvsmoname = string.Join(",", path.Last().Key + "=" + path.Last().Value);
             string netopologyfolder = string.Join("→", ossPrefixes.Take(ossPrefixes.Count - 1).Select(o => $"{o.Key}={o.Value}"));
 
-            //CMTREE => datadatetime,ossid,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype,vsmoname
-            streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\n",
-               fileDateTime,
-               ossid,
-               netopologyfolder,
-               vsDataType,
-               level,
-               parent,
-               pimoname,
-               displayvsmoname,
-               currentObjectFullType,
-               moname
-               );
+            // cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
+            streamWriter[1].Write(string.Join("\t", fileDateTime, ossid, netopologyfolder, vsDataType, level, parent, pimoname, displayvsmoname, currentObjectFullType, moname));
+            streamWriter[1].Write("\n");
 
 
-            //CMDATA dummy insert for pifiller
-            //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
-            streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
-                     fileDateTime,
-                     "\\N",
-                     "\\N",
-                     "\\N",
-                     "\\N",
-                     "\\N",
-                     ossid,
-                     moname,
-                     pimoname,
-                     currentObjectFullType,
-                     "pifiller-k",
-                     "pifiller-v"
-                     );
-
+            streamWriter[0].Write(string.Join("\t", fileDateTime, ossid, moname, pimoname, currentObjectFullType, "pifiller-k", "pifiller-v"));
+            streamWriter[0].Write("\n");
 
             foreach (KeyValuePair<string, string> attribute in currentObjectAttributes)
             {
                 if (string.IsNullOrWhiteSpace(attribute.Key))
                     continue;
-
 
                 string key = attribute.Key.Replace('\n', ' ').Replace('\t', ' ').Replace('\r', ' ').Replace("\\", "\\\\");
                 string value = attribute.Value.Replace('\n', ' ').Replace('\t', ' ').Replace('\r', ' ').Replace("\\", "\\\\");
@@ -532,8 +491,8 @@ namespace Enm3gppToCsvKVPNetCore
                         var p1 = key.Split('.')[0];
                         var p2 = key.Split('.')[1];
 
-                        Boolean p1Find = moTypeFilter.TryGetValue(p1, out isArrayParam1);
-                        Boolean p2Find = moTypeFilter.TryGetValue(p2, out isArrayParam2);
+                        Boolean p1Find = model.TryGetValue(p1, out isArrayParam1);
+                        Boolean p2Find = model.TryGetValue(p2, out isArrayParam2);
 
                         p1 += isArrayParam1 ? "[]" : "";
                         p2 += isArrayParam2 ? "[]" : "";
@@ -542,30 +501,15 @@ namespace Enm3gppToCsvKVPNetCore
                     else
                     {
 
-                        moTypeFilter.TryGetValue(key, out isArrayParam1);
+                        model.TryGetValue(key, out isArrayParam1);
                         key += isArrayParam1 ? "[]" : "";
                     }
-                    // if (isArrayParam1 || isArrayParam2) { }
                 }
 
 
-
-                //TSV prefered to help Click House importer 
-                //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
-                streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n",
-                    fileDateTime,
-                    "\\N",
-                    "\\N",
-                    "\\N",
-                    "\\N",
-                    "\\N",
-                    ossid,
-                    moname,
-                    pimoname,
-                    currentObjectFullType,
-                    key,
-                    value);
-
+                //cmdata => {datadatetime},{ossid},{vsmoname},{pimoname},{motype},{paramname},{paramvalue}
+                streamWriter[0].Write(string.Join("\t", fileDateTime, ossid, moname, pimoname, currentObjectFullType, key, value));
+                streamWriter[0].Write("\n");
             }
 
             while (xmlReader.IsStartElement())
@@ -577,14 +521,14 @@ namespace Enm3gppToCsvKVPNetCore
                     xmlReader,
                     path,
                     ossPrefixes,
-                    moTypeFilter,
+                    model,
                     streamWriter,
                     fileDateTime);
             }
             path.RemoveAt(path.Count - 1);
             xmlReader.ReadEndElement();
         }
-        static Dictionary<string, List<Tuple<string, string>>> cmData = new Dictionary<string, List<Tuple<string, string>>>();
+
 
     }
 }

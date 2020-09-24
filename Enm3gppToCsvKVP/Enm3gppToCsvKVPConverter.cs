@@ -291,8 +291,8 @@ namespace Enm3gppToCsvKVP
 
                 parent = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + displayvsmoname;
 
-                //cmdata => {datadatetime},{pk1},{pk2},{pk3},{pk4},{clid},{ossid},{vsmoname},{pimoname},{motype},{paramname},{paramvalue}
-                streamWriter[0].Write(string.Join("\t", fileDateTime, "\\N", "\\N", "\\N", "\\N", "\\N", ossid, moname, pimoname, "ManagedElement", "pifiller-k", "pifiller-v"));
+                //cmdata => {datadatetime},{ossid},{vsmoname},{pimoname},{motype},{paramname},{paramvalue}
+                streamWriter[0].Write(string.Join("\t", fileDateTime, ossid, moname, pimoname, "ManagedElement", "pifiller-k", "pifiller-v"));
                 streamWriter[0].Write("\n");
 
             }
@@ -461,7 +461,7 @@ namespace Enm3gppToCsvKVP
             streamWriter[1].Write("\n");
 
 
-            streamWriter[0].Write(string.Join("\t", fileDateTime, "\\N", "\\N", "\\N", "\\N", "\\N", ossid, moname, pimoname, currentObjectFullType, "pifiller-k", "pifiller-v"));
+            streamWriter[0].Write(string.Join("\t", fileDateTime, ossid, moname, pimoname, currentObjectFullType, "pifiller-k", "pifiller-v"));
             streamWriter[0].Write("\n");
 
             foreach (KeyValuePair<string, string> attribute in currentObjectAttributes)
@@ -510,8 +510,8 @@ namespace Enm3gppToCsvKVP
                 }
 
 
-                //cmdata => {datadatetime},{pk1},{pk2},{pk3},{pk4},{clid},{ossid},{vsmoname},{pimoname},{motype},{paramname},{paramvalue}
-                streamWriter[0].Write(string.Join("\t", fileDateTime, "\\N", "\\N", "\\N", "\\N", "\\N", ossid, moname, pimoname, currentObjectFullType, key, value));
+                //cmdata => {datadatetime},{ossid},{vsmoname},{pimoname},{motype},{paramname},{paramvalue}
+                streamWriter[0].Write(string.Join("\t", fileDateTime, ossid, moname, pimoname, currentObjectFullType, key, value));
                 streamWriter[0].Write("\n");
             }
 
