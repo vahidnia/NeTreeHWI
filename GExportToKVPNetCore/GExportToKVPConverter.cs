@@ -203,30 +203,9 @@ namespace GExportToKVP
                                         if (!pimonameDic.ContainsKey(pimoname))
                                             pimonameDic.Add(pimoname, vsmoname);
 
-                                        //→
-                                        //Console.WriteLine($"NeName:{neName} omcName:{omcName} NEType{neType} Key:{key}");
-                                        //TSV prefered to help Click House importer 
-                                        //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue
-                                        //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,nevendorid,neversion,vsmoname,pimoname,motype,paramname,paramvalue (new)
-                                        //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,nevendorid,neversion,vsmoname,pimoname,motype,paramname,paramvalue,paramvaluetype (new 2)
-                                        streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
-                                                            //streamWriter.Write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n",
-                                                            fileDate,
-                                                            "\\N",
-                                                            "\\N",
-                                                            "\\N",
-                                                            "\\N",
-                                                            "\\N",
-                                                            ossid,
-                                                            4,//hwi vednor id
-                                                            eamNE.Version,
-                                                            vsmoname,
-                                                            pimoname,
-                                                            motype,
-                                                            paramaterex.Key,
-                                                            paramaterex.Value,
-                                                            paramvaluetype);
-
+                                        //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,nevendorid,neversion,vsmoname,pimoname,motype,paramname,paramvalue,paramvaluetype 
+                                        streamWriter[0].Write(string.Join("\t", fileDate, "\\N", "\\N", "\\N", "\\N", "\\N", ossid, 4, eamNE.Version, vsmoname, pimoname, motype, paramaterex.Key, paramaterex.Value, paramvaluetype));
+                                        streamWriter[0].Write("\n");
                                     }
                                 }
                             }

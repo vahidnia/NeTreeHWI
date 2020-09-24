@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -16,168 +17,191 @@ namespace GExportToKVP
             Dictionary<string, Model> modelDic = new Dictionary<string, Model>();
             Dictionary<string, string> files = new Dictionary<string, string>();
             Dictionary<string, NeVersionDef> NeVersionDic = new Dictionary<string, NeVersionDef>();
-
-
-            foreach (var item in Directory.GetFiles(modelPath, "Model.xml", SearchOption.AllDirectories))
-                files.Add(item, Regex.Match(item, @"model\\(?<m>(?<m1>\w+)\\(?<m2>\w+)\\(?<m3>\w+))").Groups["m"].Value);
-
-            foreach (var item in Directory.GetFiles(modelPath, "NeVersion.def", SearchOption.AllDirectories))
+            try
             {
-                NeVersionDef neVersion = new NeVersionDef();
-                var lines = File.ReadAllLines(item);
-                neVersion.NeType = lines[0].Split('=')[1];
-                neVersion.DisplayVersion = lines[1].Split('=')[1];
-                neVersion.NeVersion = lines[2].Split('=')[1];
-                neVersion.MatchVersion = lines[3].Split('=')[1];
-                neVersion.NeTypeId = lines[4].Split('=')[1];
-                neVersion.IsRussFun = (lines.Count() > 5 && !string.IsNullOrWhiteSpace(lines[5])) ? lines[5].Split('=')[1] : "NA";
-                neVersion.NermVersion = (lines.Count() > 6 && !string.IsNullOrWhiteSpace(lines[6])) ? lines[6].Split('=')[1] : "NA";
-                neVersion.SoftVersion = (lines.Count() > 7 && !string.IsNullOrWhiteSpace(lines[7])) ? lines[7].Split('=')[1] : "NA";
-                neVersion.FilePath = item;
-                string key = neVersion.NeVersion;
-                if (!NeVersionDic.ContainsKey(key))
-                    NeVersionDic.Add(key, neVersion);
+                string regexPattern = "";
+                if (OperatingSystem.IsWindows())
+                    regexPattern = @"model\\(?<m>(?<m1>\w+)\\(?<m2>\w+)\\(?<m3>\w+))";
                 else
-                    Console.WriteLine(item);
+                    regexPattern = @"model/(?<m>(?<m1>\w+)/(?<m2>\w+)/(?<m3>\w+))";
+                foreach (var item in Directory.GetFiles(modelPath, "Model.xml", SearchOption.AllDirectories))
+                        files.Add(item, Regex.Match(item, regexPattern).Groups["m"].Value);
 
-            }
+                Console.WriteLine($"Regex patern is {regexPattern} and files count is {files.Count()}");
 
-
-
-
-            foreach (var file in files.Keys)
-            {
-                string neTreeFilePath = Path.Combine(Path.GetDirectoryName(file), "NeTree.xml");
-                if (!File.Exists(neTreeFilePath))
+                foreach (var item in Directory.GetFiles(modelPath, "NeVersion.def", SearchOption.AllDirectories))
                 {
-                    Console.WriteLine("Tree not found");
-                    continue;
+                    NeVersionDef neVersion = new NeVersionDef();
+                    var lines = File.ReadAllLines(item);
+                    neVersion.NeType = lines[0].Split('=')[1];
+                    neVersion.DisplayVersion = lines[1].Split('=')[1];
+                    neVersion.NeVersion = lines[2].Split('=')[1];
+                    neVersion.MatchVersion = lines[3].Split('=')[1];
+                    neVersion.NeTypeId = lines[4].Split('=')[1];
+                    neVersion.IsRussFun = (lines.Count() > 5 && !string.IsNullOrWhiteSpace(lines[5])) ? lines[5].Split('=')[1] : "NA";
+                    neVersion.NermVersion = (lines.Count() > 6 && !string.IsNullOrWhiteSpace(lines[6])) ? lines[6].Split('=')[1] : "NA";
+                    neVersion.SoftVersion = (lines.Count() > 7 && !string.IsNullOrWhiteSpace(lines[7])) ? lines[7].Split('=')[1] : "NA";
+                    neVersion.FilePath = item;
+                    string key = neVersion.NeVersion;
+                    if (!NeVersionDic.ContainsKey(key))
+                        NeVersionDic.Add(key, neVersion);
+                    else
+                        Console.WriteLine(item);
+
                 }
 
-                Model model = new Model();
 
-                using (FileStream stream = File.OpenRead(file))
+
+
+                foreach (var file in files.Keys)
                 {
-                    XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
+                    string neTreeFilePath = Path.Combine(Path.GetDirectoryName(file), "NeTree.xml");
+                    if (!File.Exists(neTreeFilePath))
                     {
-                        DtdProcessing = DtdProcessing.Ignore,
-                        IgnoreComments = true,
-                        IgnoreProcessingInstructions = true,
-                        IgnoreWhitespace = true
-                    };
-                    using (XmlReader xmlReader = XmlReader.Create(stream, xmlReaderSettings))
-                    {
-                        try
-                        {
-                            xmlReader.ReadToDescendant("DataFile");
-                            xmlReader.ReadToDescendant("NeTypeName");
-                            model.NeTypeName = xmlReader.ReadElementContentAsString();
-                            model.Version = xmlReader.ReadElementContentAsString();
-                            model.Path = file;
-                            //Console.WriteLine(file);
-                            if (xmlReader.LocalName == "ExternalTypes")
-                            {
-                                xmlReader.Read();
-                                while (xmlReader.Name == "Enum" || xmlReader.LocalName == "BitDomain")
-                                {
-                                    try
-                                    {
-                                        ExternalTypesEnum exTypeEnum = new ExternalTypesEnum();
-                                        exTypeEnum.BasicId = xmlReader.GetAttribute("basicId");
-                                        exTypeEnum.dispUse = xmlReader.GetAttribute("dispUse");
-                                        exTypeEnum.Name = xmlReader.GetAttribute("name");
-                                        exTypeEnum.mmlUse = xmlReader.GetAttribute("mmlUse");
-                                        xmlReader.Read();
-                                        while (xmlReader.LocalName == "EnumItem")
-                                        {
-                                            exTypeEnum.ExternalTypesEnumItemList.Add(new ExternalTypesEnumItem()
-                                            {
-                                                desId = (xmlReader.GetAttribute("desId")),
-                                                name = xmlReader.GetAttribute("name"),
-                                                Value = (xmlReader.GetAttribute("value"))
-                                            });
-                                            xmlReader.Read();
-                                        }
-
-                                        while (xmlReader.LocalName == "BitEnumItem")
-                                        {
-                                            exTypeEnum.ExternalTypesBitEnumItemList.Add(new ExternalTypesBitEnumItem()
-                                            {
-                                                desId = (xmlReader.GetAttribute("desId")),
-                                                name = xmlReader.GetAttribute("name"),
-                                                index = (xmlReader.GetAttribute("index"))
-                                            });
-                                            xmlReader.Read();
-                                        }
-
-                                        //if (xmlReader.LocalName == "Sequence")
-                                        //{
-                                        //    exTypeEnum.ExternalTypesBitEnumItemList.Add(new ExternalTypesBitEnumItem()
-                                        //    {
-                                        //        desId = (xmlReader.GetAttribute("desId")),
-                                        //        name = xmlReader.GetAttribute("name"),
-                                        //        index = (xmlReader.GetAttribute("index"))
-                                        //    });
-                                        //    xmlReader.Read();
-                                        //}
-
-                                        model.ExternalTypesEnums.Add(exTypeEnum.Name.ToUpper(), exTypeEnum);
-                                        xmlReader.Read();
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine(ex.ToString());
-                                    }
-                                }
-                            }
-
-
-                            xmlReader.ReadToFollowing("MocDefs");
-
-                            xmlReader.Read();
-                            int level = 1;
-                            while (xmlReader.Name == "Moc")
-                            {
-                                Moc moc = new Moc();
-                                ReadMocs(xmlReader, level, moc, model.ExternalTypesEnums);
-                                model.Mocs.Add(moc.NeName.ToUpper(), moc);
-                                xmlReader.Read();
-                            }
-                            if (NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).Any())
-                                model.DisplayVersion = NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).FirstOrDefault().DisplayVersion;
-                            else
-                            {
-
-                                Console.WriteLine(string.Join("\\", files[file].Split('\\').Take(2)));
-                                Console.WriteLine("Unable to find version");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(file);
-                        }
+                        Console.WriteLine("Tree not found");
+                        continue;
                     }
 
-                    modelDic.Add(files[file], model);
+                    Model model = new Model();
+
+                    using (FileStream stream = File.OpenRead(file))
+                    {
+                        XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
+                        {
+                            DtdProcessing = DtdProcessing.Ignore,
+                            IgnoreComments = true,
+                            IgnoreProcessingInstructions = true,
+                            IgnoreWhitespace = true
+                        };
+                        using (XmlReader xmlReader = XmlReader.Create(stream, xmlReaderSettings))
+                        {
+                            try
+                            {
+                                xmlReader.ReadToDescendant("DataFile");
+                                xmlReader.ReadToDescendant("NeTypeName");
+                                model.NeTypeName = xmlReader.ReadElementContentAsString();
+                                model.Version = xmlReader.ReadElementContentAsString();
+                                model.Path = file;
+                                //Console.WriteLine(file);
+                                if (xmlReader.LocalName == "ExternalTypes")
+                                {
+                                    xmlReader.Read();
+                                    while (xmlReader.Name == "Enum" || xmlReader.LocalName == "BitDomain")
+                                    {
+                                        try
+                                        {
+                                            ExternalTypesEnum exTypeEnum = new ExternalTypesEnum();
+                                            exTypeEnum.BasicId = xmlReader.GetAttribute("basicId");
+                                            exTypeEnum.dispUse = xmlReader.GetAttribute("dispUse");
+                                            exTypeEnum.Name = xmlReader.GetAttribute("name");
+                                            exTypeEnum.mmlUse = xmlReader.GetAttribute("mmlUse");
+                                            xmlReader.Read();
+                                            while (xmlReader.LocalName == "EnumItem")
+                                            {
+                                                exTypeEnum.ExternalTypesEnumItemList.Add(new ExternalTypesEnumItem()
+                                                {
+                                                    desId = (xmlReader.GetAttribute("desId")),
+                                                    name = xmlReader.GetAttribute("name"),
+                                                    Value = (xmlReader.GetAttribute("value"))
+                                                });
+                                                xmlReader.Read();
+                                            }
+
+                                            while (xmlReader.LocalName == "BitEnumItem")
+                                            {
+                                                exTypeEnum.ExternalTypesBitEnumItemList.Add(new ExternalTypesBitEnumItem()
+                                                {
+                                                    desId = (xmlReader.GetAttribute("desId")),
+                                                    name = xmlReader.GetAttribute("name"),
+                                                    index = (xmlReader.GetAttribute("index"))
+                                                });
+                                                xmlReader.Read();
+                                            }
+
+                                            //if (xmlReader.LocalName == "Sequence")
+                                            //{
+                                            //    exTypeEnum.ExternalTypesBitEnumItemList.Add(new ExternalTypesBitEnumItem()
+                                            //    {
+                                            //        desId = (xmlReader.GetAttribute("desId")),
+                                            //        name = xmlReader.GetAttribute("name"),
+                                            //        index = (xmlReader.GetAttribute("index"))
+                                            //    });
+                                            //    xmlReader.Read();
+                                            //}
+
+                                            model.ExternalTypesEnums.Add(exTypeEnum.Name.ToUpper(), exTypeEnum);
+                                            xmlReader.Read();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Console.WriteLine(ex.ToString());
+                                        }
+                                    }
+                                }
+
+
+                                xmlReader.ReadToFollowing("MocDefs");
+
+                                xmlReader.Read();
+                                int level = 1;
+                                while (xmlReader.Name == "Moc")
+                                {
+                                    Moc moc = new Moc();
+                                    ReadMocs(xmlReader, level, moc, model.ExternalTypesEnums);
+                                    model.Mocs.Add(moc.NeName.ToUpper(), moc);
+                                    xmlReader.Read();
+                                }
+                                if (NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join(Path.DirectorySeparatorChar, files[file].Split(Path.DirectorySeparatorChar).Take(2)))).Any())
+                                    model.DisplayVersion = NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join(Path.DirectorySeparatorChar, files[file].Split(Path.DirectorySeparatorChar).Take(2)))).FirstOrDefault().DisplayVersion;
+                                else
+                                {
+
+                                    Console.WriteLine(string.Join(Path.DirectorySeparatorChar, files[file].Split(Path.DirectorySeparatorChar).Take(2)));
+                                    Console.WriteLine("Unable to find version");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(file);
+                            }
+                        }
+
+                        modelDic.Add(files[file], model);
+                    }
+                    string ne = Regex.Match(file, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
+                    var tree = NeTreeConverter.Convert(neTreeFilePath, ne);
+                    if (tree != null)
+                    {
+                        model.ModelTree = tree;
+                        model.DescendantsTree();
+                    }
+                    else
+                    {
+                        Console.WriteLine("error creating tree");
+                        continue;
+                    }
                 }
-                string ne = Regex.Match(file, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
-                var tree = NeTreeConverter.Convert(neTreeFilePath, ne);
-                if (tree != null)
-                {
-                    model.ModelTree = tree;
-                    model.DescendantsTree();
-                }
-                else
-                {
-                    Console.WriteLine("error creating tree");
-                    continue;
-                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
             }
 
             return modelDic;
 
         }
+        public static class OperatingSystem
+        {
+            public static bool IsWindows() =>
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
+            public static bool IsMacOS() =>
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+            public static bool IsLinux() =>
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+        }
 
         private static void ReadMocs(XmlReader xmlReader, int level, Moc moc, Dictionary<string, ExternalTypesEnum> externalTypesEnum)
         {
