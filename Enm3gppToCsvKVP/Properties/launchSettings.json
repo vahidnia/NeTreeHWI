@@ -2,7 +2,7 @@
   "profiles": {
     "Enm3gppToSQLite": {
       "commandName": "Project",
-      "commandLineArgs": "d:\\temp\\a1keyvalue\\ENM_4G_OSS_5_scheduled_export_3GPP_2020-07-06T05-00-00-022_4f0ee609-6d03-488e-b825-77ed95bab761.xml c:\\temp\\singtel.v2.0.csv 200 d:\\temp\\eriMo\\"
+      "commandLineArgs": "d:\\temp\\a1keyvalue\\ENM_4G_OSS_5_scheduled_export_3GPP_2020-07-06T05-00-00-022_4f0ee609-6d03-488e-b825-77ed95bab761.xml c:\\temp\\singtel.v2.0.csv "
     }
   }
 }

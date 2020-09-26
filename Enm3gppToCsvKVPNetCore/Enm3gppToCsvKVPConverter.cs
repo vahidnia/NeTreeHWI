@@ -24,10 +24,11 @@ namespace Enm3gppToCsvKVPNetCore
         private const string AttributesColumnName = "attributes";
 
 
-        public static void Convert(string inputFilePath, string dbFilePath, string ossId, string modelPath)
+        public static void Convert(string inputFilePath, string dbFilePath, string modelPath)
         {
             using (FileStream fileStream = File.Open(inputFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
+                string ossId = Regex.Match(inputFilePath, @"OSSID-(?<ossid>\d+)").Groups["ossid"].Value;
                 string strDate = System.Text.RegularExpressions.Regex.Match(inputFilePath, @"\d\d\d\d-\d\d-\d\dT\d\d-\d\d-\d\d").Value;
                 string fileDateTime = strDate.Substring(0, strDate.IndexOf('T')) + " " + strDate.Substring(strDate.IndexOf('T') + 1, 8).Replace('-', ':');
                 var model = ExtractModel(modelPath);
