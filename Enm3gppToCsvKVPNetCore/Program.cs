@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,6 +15,11 @@ namespace Enm3gppToCsvKVPNetCore
     {
         private static void Main(string[] args)
         {
+            var log = new LoggerConfiguration()
+                 .WriteTo.File("enm2kvp.log").WriteTo.Console()
+                 .CreateLogger();
+          
+            
             Stopwatch sw = new Stopwatch();
             sw.Start();
             string source = "";
@@ -22,7 +28,7 @@ namespace Enm3gppToCsvKVPNetCore
             if (args.Length == 1)
             {
                 source = args[0];
-                target = Path.Combine(Path.GetDirectoryName(source), Path.GetFileNameWithoutExtension(source + "Parsed.csv"));
+                target = Path.Combine(Directory.GetParent(Path.GetDirectoryName(source)).FullName, "cooked", Path.GetFileNameWithoutExtension(source) + ".csv");
                 var CurrentDirectory = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 model = Path.Combine(CurrentDirectory, "model");
             }
@@ -41,13 +47,13 @@ namespace Enm3gppToCsvKVPNetCore
             }
             else
             {
-                Console.WriteLine("Usage: enm3gpp2kvp <source> <target.csv> <model>");
+                log.Error("Usage: enm3gpp2kvp <source> <target.csv> <model>");
                 return;
             }
-            Console.WriteLine($"source:{source} \r\ntarget:{target} \r\nmodel:{model}");
+            log.Information($"source:{source} \r\ntarget:{target} \r\nmodel:{model}");
             Enm3GPPToCsvKVPConverter.Convert(source, target, model);
             sw.Stop();
-            Console.WriteLine($"Completed in {sw.Elapsed.TotalSeconds} seconds");
+            log.Information($"Completed in {sw.Elapsed.TotalSeconds} seconds");
         }
     }
 
