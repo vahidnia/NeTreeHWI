@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace GExportToKVP
 {
@@ -10,34 +11,56 @@ namespace GExportToKVP
     {
         static void Main(string[] args)
         {
-
-
-
-
-            if (args.Length != 5)
+            if (args.Length < 8)
             {
                 Console.WriteLine("Wrong args!");
                 return;
             }
-            string sourcePath = args[0];
-            string sourceFileMask = args[1];
-            string dbFilePath = args[2];
-            string modelPath = args[3];
-            string ossid = args[4];
-
-            List<StreamWriter> streamWriter = new List<StreamWriter>();
-
-            streamWriter.Add(new StreamWriter(dbFilePath, false));
-            streamWriter.Add(new StreamWriter(Path.Combine(Path.GetDirectoryName(dbFilePath), "Tree" + Path.GetFileName(dbFilePath)), false));
-            streamWriter.Add(new StreamWriter(Path.Combine(Path.GetDirectoryName(dbFilePath), "Type" + Path.GetFileName(dbFilePath)), false));
 
 
-            Dictionary<string, Dictionary<string, int>> columnIndices = new Dictionary<string, Dictionary<string, int>>(StringComparer.OrdinalIgnoreCase);
+            string sourcePath = "";
+            string sourceFileMask = "";
+            string dbFilePath = "";
+            string modelPath = "";
+            string ossid = "";
+            string prefix = "";
+            string batchCount = "";
+            string eaminfoPath = "";
+            string moveTo = "";
+
+            if (args.Length == 9)
+            {
+                sourcePath = args[0];
+                sourceFileMask = args[1];
+                dbFilePath = args[2];
+                modelPath = args[3];
+                ossid = args[4];
+                prefix = args[5];
+                batchCount = args[6];
+                eaminfoPath = args[7];
+                moveTo = args[8];
+            }
+            else if (args.Length == 8)
+            {
+                sourcePath = args[0];
+                sourceFileMask = args[1];
+                dbFilePath = args[2];
+                modelPath = args[3];
+                ossid = args[4];
+                batchCount = args[5];
+                eaminfoPath = args[6];
+                moveTo = args[7];
+            }
+
+
+
+
+            //Dictionary<string, Dictionary<string, int>> columnIndices = new Dictionary<string, Dictionary<string, int>>(StringComparer.OrdinalIgnoreCase);
             //Dictionary<string, SQLiteCommand> dbInsertCommandCache = new Dictionary<string, SQLiteCommand>(StringComparer.OrdinalIgnoreCase);
 
 
             //EamInfoParser.ExtractNeList()
-            var model = ModelConverter.Convert(modelPath);
+            var model = ModelConverter.Convert(modelPath, prefix);
             //datadatetime,ossid,motype,parametername,type
             //foreach (var item in model.Keys)
             //{
@@ -65,44 +88,60 @@ namespace GExportToKVP
             //}
 
 
-            var nodeList = EamInfoParser.ExtractNeList(Path.Combine(modelPath, "EAMInfo.xml"));
-
-
-            foreach (string filePath in Directory.EnumerateFiles(sourcePath, sourceFileMask))
+            var nodeList = EamInfoParser.ExtractNeList(eaminfoPath);
+          
+            while (Directory.GetFiles(sourcePath).Count() > 0)
             {
-                string fileName = Path.GetFileName(filePath);
-                string ne = Regex.Match(fileName, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
-                Console.WriteLine(fileName);
-                var dateRegex = Regex.Match(fileName, @"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)");
-
-                var dateTime = new DateTime(int.Parse(dateRegex.Groups[1].Value), int.Parse(dateRegex.Groups[2].Value), int.Parse(dateRegex.Groups[3].Value), 0, 0, 0).ToString("yyyy-MM-dd HH:mm:ss");
-
-                if (fileName.EndsWith(".gz"))
+                
+                List<StreamWriter> streamWriter = new List<StreamWriter>();
+                var newPath = Path.Combine(dbFilePath, "HWI_CM_OSSID-" + ossid + "+" + System.Guid.NewGuid().ToString().Replace('-', '_'));
+                streamWriter.Add(new StreamWriter(newPath, false));
+                streamWriter.Add(new StreamWriter(Path.Combine(Path.GetDirectoryName(newPath), "Tree" + Path.GetFileName(newPath)), false));
+                //streamWriter.Add(new StreamWriter(Path.Combine(Path.GetDirectoryName(dbFilePath), "Type" + Path.GetFileName(dbFilePath)), false));
+                var f1 = streamWriter[0].FlushAsync();
+                var f2 = streamWriter[1].FlushAsync();
+                foreach (string filePath in Directory.EnumerateFiles(sourcePath, sourceFileMask).Take(int.Parse(batchCount)))
                 {
-                    using (FileStream compressedStream = File.OpenRead(filePath))
+                    Task.WaitAll(new Task[] { f1, f2 });
+                    string fileName = Path.GetFileName(filePath);
+                    string ne = Regex.Match(fileName, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
+                    Console.WriteLine(fileName);
+                    var dateRegex = Regex.Match(fileName, @"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)");
+
+                    var dateTime = new DateTime(int.Parse(dateRegex.Groups[1].Value), int.Parse(dateRegex.Groups[2].Value), int.Parse(dateRegex.Groups[3].Value), 0, 0, 0).ToString("yyyy-MM-dd HH:mm:ss");
+
+                    if (fileName.EndsWith(".gz"))
                     {
-                        using (Stream stream = new ICSharpCode.SharpZipLib.GZip.GZipInputStream(compressedStream))
+                        using (FileStream compressedStream = File.OpenRead(filePath))
                         {
-                            GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model, nodeList, dateTime, ossid);                  
+                            using (Stream stream = new ICSharpCode.SharpZipLib.GZip.GZipInputStream(compressedStream))
+                            {
+                                GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, model, nodeList, dateTime, ossid);
+                            }
                         }
                     }
-                }
-                else
-                {
-                    using (FileStream stream = File.OpenRead(filePath))
+                    else
                     {
-                        GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, columnIndices, model, nodeList, dateTime, ossid);
+                        using (FileStream stream = File.OpenRead(filePath))
+                        {
+                            GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, model, nodeList, dateTime, ossid);
+                        }
                     }
+                    f1 = streamWriter[0].FlushAsync();
+                    f2 = streamWriter[1].FlushAsync();
+                    //streamWriter[2].Flush();
+                    string fileDestincation = Path.Combine(moveTo, Path.GetFileName(filePath));
+                    if (File.Exists(fileDestincation))
+                        File.Delete(fileDestincation);
+                    File.Move(filePath, fileDestincation);
                 }
-                streamWriter[0].Flush();
-                streamWriter[1].Flush();
-                streamWriter[2].Flush();
-
+                Task.WaitAll(new Task[] { f1, f2 });
+                streamWriter[0].Close();
+                streamWriter[1].Close();
+                //streamWriter[2].Close();
             }
 
-            streamWriter[0].Close();
-            streamWriter[1].Close();
-            streamWriter[2].Close();
+
         }
     }
 };
