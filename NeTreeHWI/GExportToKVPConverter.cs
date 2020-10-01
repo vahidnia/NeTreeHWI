@@ -17,7 +17,7 @@ namespace GExportToKVP
             List<StreamWriter> streamWriter,
             Dictionary<string, Model> models,
             List<EamNe> eamNElist,
-            string fileDate, 
+            string fileDate,
             string ossid)
         {
             Dictionary<string, string> pimonameDic = new Dictionary<string, string>();
@@ -205,21 +205,9 @@ namespace GExportToKVP
                                             pimonameDic.Add(pimoname, vsmoname);
 
                                         //→
-                                        //Console.WriteLine($"NeName:{neName} omcName:{omcName} NEType{neType} Key:{key}");
-                                        //TSV prefered to help Click House importer 
-                                        //CMDATA => datadatetime,pk1,pk2,pk3,pk4,clid,ossid,nevendorid,neversion,vsmoname,pimoname,motype,paramname,paramvalue,paramvaluetype (old)
-                                        //CMDATA => datadatetime,ossid,neversion,vsmoname,pimoname,motype,paramname,paramvalue,paramvaluetype 
-                                        streamWriter[0].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
-                                                            fileDate,
-                                                            ossid,
-                                                            eamNE.Version,
-                                                            vsmoname,
-                                                            pimoname,
-                                                            motype,
-                                                            paramaterex.Key,
-                                                            paramaterex.Value,
-                                                            paramvaluetype);
-
+                                        //cmdata => {datadatetime},{ossid},{vsmoname},{pimoname},{motype},{paramname},{paramvalue}
+                                        streamWriter[0].Write(string.Join("\t", fileDate, ossid, vsmoname, pimoname, motype, paramaterex.Key, paramaterex.Value));
+                                        streamWriter[0].Write("\n");
                                     }
                                 }
                             }
@@ -237,19 +225,17 @@ namespace GExportToKVP
                 //if (level == 1) { }
                 string parentpimoname = string.Join("→", item.Split('→').ToArray<string>().Take(item.Count(a => a == '→')));
 
-                //CMTREE => datadatetime,ossid,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype,vsmoname
-                //CMTREE => datadatetime,ossid,neversion,netopologyfolder,treeelementclass,treedepth,parentpimoname,pimoname,displayvsmoname,motype,vsmoname
-                streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\n",
+                ////cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
+                streamWriter[1].Write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\n",
                    fileDate,
                    ossid,
-                   eamNE.Version,
                    eamNE == null ? "" : eamNE.Folder,//netopologyfolder
                    item.Split('→')[item.Count(a => a == '→')].Split('=')[0],//treeelementclass
                    level,
                    level > 1 ? parentpimoname : "",//parentpimoname
                    item,//pimoname
                    level == 1 ? item.Split('→')[item.Count(a => a == '→') - 1] : item.Split('→')[item.Count(a => a == '→')],//displayvsmoname
-                   string.Join(",", item.Split('→').Select(a => a.Split('=')[0]).ToArray<string>()),
+                   string.Join(",", item.Split('→').Select(a => a.Split('=')[0]).ToArray<string>()),//motype
                    pimonameDic[item] //vsmoname 
                    );
             }

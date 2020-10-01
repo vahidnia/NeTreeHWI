@@ -89,7 +89,8 @@ namespace GExportToKVP
 
 
             var nodeList = EamInfoParser.ExtractNeList(eaminfoPath);
-
+            int totalFileCount = Directory.GetFiles(sourcePath).Count();
+            int processedFileCount = 0;
             while (Directory.GetFiles(sourcePath).Count() > 0)
             {
 
@@ -102,6 +103,7 @@ namespace GExportToKVP
                 var f2 = streamWriter[1].FlushAsync();
                 foreach (string filePath in Directory.EnumerateFiles(sourcePath, sourceFileMask).Take(int.Parse(batchCount)))
                 {
+                    Console.WriteLine($"{DateTime.Now.ToString()}  Processing {processedFileCount++}/{totalFileCount}");
                     Task.WaitAll(new Task[] { f1, f2 });
                     string fileName = Path.GetFileName(filePath);
                     string ne = Regex.Match(fileName, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
