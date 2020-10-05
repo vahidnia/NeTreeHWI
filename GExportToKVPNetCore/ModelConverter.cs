@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -19,7 +20,22 @@ namespace GExportToKVP
 
 
             foreach (var item in Directory.GetFiles(modelPath, prefix + "Model.xml", SearchOption.AllDirectories))
-                files.Add(item, Regex.Match(item, @"model\\(?<m>(?<m1>\w+)\\(?<m2>\w+)\\(?<m3>\w+))").Groups["m"].Value);
+                if (!item.Contains("ToCheckTool"))
+                    if (!files.ContainsKey(item))
+                    {
+                        string neTreeFilePath = Path.Combine(Path.GetDirectoryName(item), prefix + "NeTree.xml");
+                        if (!File.Exists(neTreeFilePath))
+                            Console.WriteLine($"Tree not found for {item}");
+                        else
+                        {
+                            if (OperatingSystem.IsWindows())
+                                files.Add(item, Regex.Match(item, @"raw\\(?<m>(?<m1>\w+)\\(?<m2>\w+)\\(?<m3>\w+))").Groups["m"].Value);
+                            else
+                                files.Add(item, Regex.Match(item, @"raw/(?<m>(?<m1>\w+)/(?<m2>\w+)/(?<m3>\w+))").Groups["m"].Value);
+                        }
+                    }
+
+            Console.WriteLine($"All model count {files.Count}");
 
             foreach (var item in Directory.GetFiles(modelPath, prefix + "NeVersion.def", SearchOption.AllDirectories))
             {
@@ -143,13 +159,28 @@ namespace GExportToKVP
                                 model.Mocs.Add(moc.NeName.ToUpper(), moc);
                                 xmlReader.Read();
                             }
-                            if (NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).Any())
-                                model.DisplayVersion = NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).FirstOrDefault().DisplayVersion;
+                            if (OperatingSystem.IsWindows())
+                            {
+                                if (NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).Any())
+                                    model.DisplayVersion = NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("\\", files[file].Split('\\').Take(2)))).FirstOrDefault().DisplayVersion;
+                                else
+                                {
+
+                                    Console.WriteLine(string.Join("\\", files[file].Split('\\').Take(2)));
+                                    Console.WriteLine("Unable to find version");
+                                }
+                            }
                             else
                             {
+                                if (NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("/", files[file].Split('/').Take(2)))).Any())
+                                    model.DisplayVersion = NeVersionDic.Values.Where(a => a.FilePath.Contains(string.Join("/", files[file].Split('/').Take(2)))).FirstOrDefault().DisplayVersion;
+                                else
+                                {
 
-                                Console.WriteLine(string.Join("\\", files[file].Split('\\').Take(2)));
-                                Console.WriteLine("Unable to find version");
+                                    Console.WriteLine(string.Join("/", files[file].Split('/').Take(2)));
+                                    Console.WriteLine("Unable to find version");
+                                }
+
                             }
                         }
                         catch (Exception ex)
@@ -158,7 +189,8 @@ namespace GExportToKVP
                         }
                     }
 
-                    modelDic.Add(files[file], model);
+                    if (!modelDic.ContainsKey(files[file]))
+                        modelDic.Add(files[file], model);
                 }
                 string ne = Regex.Match(file, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
                 var tree = NeTreeConverter.Convert(neTreeFilePath, ne);
@@ -258,6 +290,18 @@ namespace GExportToKVP
         }
     }
 
+
+    public static class OperatingSystem
+    {
+        public static bool IsWindows() =>
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+        public static bool IsMacOS() =>
+            RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+        public static bool IsLinux() =>
+            RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+    }
 
     internal class NeVersionDef
     {

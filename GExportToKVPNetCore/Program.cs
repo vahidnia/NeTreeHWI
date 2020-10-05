@@ -50,9 +50,14 @@ namespace GExportToKVP
                 batchCount = args[5];
                 eaminfoPath = args[6];
                 moveTo = args[7];
+
+                Console.WriteLine("paramcount 8");
             }
+            else
+                Console.WriteLine("Error paramcount");
 
 
+            Console.WriteLine("cm.engine started");
 
 
             //Dictionary<string, Dictionary<string, int>> columnIndices = new Dictionary<string, Dictionary<string, int>>(StringComparer.OrdinalIgnoreCase);
@@ -95,47 +100,56 @@ namespace GExportToKVP
             {
 
                 List<StreamWriter> streamWriter = new List<StreamWriter>();
-                var newPath = Path.Combine(dbFilePath, "HWI_CM_OSSID-" + ossid + "+" + System.Guid.NewGuid().ToString().Replace('-', '_'));
-                streamWriter.Add(new StreamWriter(newPath, false));
-                streamWriter.Add(new StreamWriter(Path.Combine(Path.GetDirectoryName(newPath), "Tree" + Path.GetFileName(newPath)), false));
+                var newPathTree = Path.Combine(dbFilePath, "Tree+HWI_CM_OSSID-" + ossid + "+" + System.Guid.NewGuid().ToString().Replace('-', '_') + ".csv");
+                var newPathData = Path.Combine(dbFilePath, "Data+HWI_CM_OSSID-" + ossid + "+" + System.Guid.NewGuid().ToString().Replace('-', '_') + ".csv");
+                streamWriter.Add(new StreamWriter(newPathData, false));
+                streamWriter.Add(new StreamWriter(newPathTree, false));
                 //streamWriter.Add(new StreamWriter(Path.Combine(Path.GetDirectoryName(dbFilePath), "Type" + Path.GetFileName(dbFilePath)), false));
                 var f1 = streamWriter[0].FlushAsync();
                 var f2 = streamWriter[1].FlushAsync();
                 foreach (string filePath in Directory.EnumerateFiles(sourcePath, sourceFileMask).Take(int.Parse(batchCount)))
                 {
-                    Console.WriteLine($"{DateTime.Now.ToString()}  Processing {processedFileCount++}/{totalFileCount}");
-                    Task.WaitAll(new Task[] { f1, f2 });
-                    string fileName = Path.GetFileName(filePath);
-                    string ne = Regex.Match(fileName, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
-                    Console.WriteLine(fileName);
-                    var dateRegex = Regex.Match(fileName, @"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)");
-
-                    var dateTime = new DateTime(int.Parse(dateRegex.Groups[1].Value), int.Parse(dateRegex.Groups[2].Value), int.Parse(dateRegex.Groups[3].Value), 0, 0, 0).ToString("yyyy-MM-dd HH:mm:ss");
-
-                    if (fileName.EndsWith(".gz"))
+                    try
                     {
-                        using (FileStream compressedStream = File.OpenRead(filePath))
+                        Console.WriteLine($"{DateTime.Now.ToString()}  Processing {processedFileCount++}/{totalFileCount}");
+                        Task.WaitAll(new Task[] { f1, f2 });
+                        string fileName = Path.GetFileName(filePath);
+                        string ne = Regex.Match(fileName, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
+                        Console.WriteLine(fileName);
+                        var dateRegex = Regex.Match(fileName, @"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)");
+
+                        var dateTime = new DateTime(int.Parse(dateRegex.Groups[1].Value), int.Parse(dateRegex.Groups[2].Value), int.Parse(dateRegex.Groups[3].Value), 0, 0, 0).ToString("yyyy-MM-dd HH:mm:ss");
+
+                        if (fileName.EndsWith(".gz"))
                         {
-                            using (Stream stream = new ICSharpCode.SharpZipLib.GZip.GZipInputStream(compressedStream))
+                            using (FileStream compressedStream = File.OpenRead(filePath))
+                            {
+                                using (Stream stream = new ICSharpCode.SharpZipLib.GZip.GZipInputStream(compressedStream))
+                                {
+                                    GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, model, nodeList, dateTime, ossid);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            using (FileStream stream = File.OpenRead(filePath))
                             {
                                 GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, model, nodeList, dateTime, ossid);
                             }
                         }
+                        f1 = streamWriter[0].FlushAsync();
+                        f2 = streamWriter[1].FlushAsync();
+                        //streamWriter[2].Flush();
+                        string fileDestincation = Path.Combine(moveTo, Path.GetFileName(filePath));
+                        if (File.Exists(fileDestincation))
+                            File.Delete(fileDestincation);
+                        File.Move(filePath, fileDestincation);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        using (FileStream stream = File.OpenRead(filePath))
-                        {
-                            GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, model, nodeList, dateTime, ossid);
-                        }
+                        Console.WriteLine(ex.ToString());
+                        Console.WriteLine(filePath);
                     }
-                    f1 = streamWriter[0].FlushAsync();
-                    f2 = streamWriter[1].FlushAsync();
-                    //streamWriter[2].Flush();
-                    string fileDestincation = Path.Combine(moveTo, Path.GetFileName(filePath));
-                    if (File.Exists(fileDestincation))
-                        File.Delete(fileDestincation);
-                    File.Move(filePath, fileDestincation);
                 }
                 Task.WaitAll(new Task[] { f1, f2 });
                 streamWriter[0].Close();

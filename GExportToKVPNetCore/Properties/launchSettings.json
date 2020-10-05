@@ -2,7 +2,7 @@
   "profiles": {
     "GExportToKVPNetCore": {
       "commandName": "Project",
-      "commandLineArgs": "c:\\temp\\TC_CM_HWI\\sample\\hava\\  *.gz C:\\working\\CM\\HWI\\HWI.CM.csv c:\\temp\\TC_CM_HWI\\sample\\model\\ 46"
+      "commandLineArgs": "c:\\temp\\TC_CM_HWI\\sample\\hava\\   *.gz  C:\\working\\CM\\HWI\\ c:\\temp\\TC_CM_HWI\\data_modelzip\\raw\\  46 HWIOSS_MODEL_ATES+ 10  c:\\temp\\TC_CM_HWI\\data_eaminfozip\\raw\\HWIOSS_MODEL_ATES+EAMInfo.xml    C:\\temp\\TC_CM_HWI\\sample\\archive"
     }
   }
 }
