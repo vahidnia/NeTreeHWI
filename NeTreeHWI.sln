@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Enm3gppToCsvKVP", "Enm3gppT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Enm3gppToCsvKVPNetCore", "Enm3gppToCsvKVPNetCore\Enm3gppToCsvKVPNetCore.csproj", "{565367CB-A3AF-4E8B-BD7E-AC36168C9A34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GExportToKVPNetCore", "GExportToKVPNetCore\GExportToKVPNetCore.csproj", "{AF06D0A4-40C8-454A-8FEF-BBFE63AF16AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GExportToKVPNetCore", "GExportToKVPNetCore\GExportToKVPNetCore.csproj", "{AF06D0A4-40C8-454A-8FEF-BBFE63AF16AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mini.synch", "mini.synch\mini.synch.csproj", "{FB9D6748-5827-40A5-8956-312EDBA9AD20}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{AF06D0A4-40C8-454A-8FEF-BBFE63AF16AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF06D0A4-40C8-454A-8FEF-BBFE63AF16AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF06D0A4-40C8-454A-8FEF-BBFE63AF16AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB9D6748-5827-40A5-8956-312EDBA9AD20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB9D6748-5827-40A5-8956-312EDBA9AD20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB9D6748-5827-40A5-8956-312EDBA9AD20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB9D6748-5827-40A5-8956-312EDBA9AD20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
