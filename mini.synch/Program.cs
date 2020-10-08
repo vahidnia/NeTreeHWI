@@ -13,10 +13,10 @@ namespace mini.synch
 
 
             var tblFile = File.ReadAllLines(@"C:\temp\cm.manager\cm_tbl_mng_202010060113.csv");
-            List<tblClass> tblList = new List<tblClass>();
+            List<TblClass> tblList = new List<TblClass>();
             foreach (var item in tblFile.Skip(1))
             {
-                tblList.Add(new tblClass()
+                tblList.Add(new TblClass()
                 {
                     tbl = item.Split(',')[0],
                     datetime = DateTime.Parse(item.Split(',')[1]),
@@ -26,18 +26,19 @@ namespace mini.synch
                 });
             }
 
-            ProcessENM(tblList);
-            ProcessHWI(tblList);
+            int offset = 0;
+            ProcessENM(tblList, offset);
+            ProcessHWI(tblList, offset);
         }
 
-        private static void ProcessHWI(List<tblClass> tblList)
+        private static void ProcessHWI(List<TblClass> tblList, int offset)
         {
             string finalUqery = "";
 
             StringBuilder sb = new StringBuilder();
 
             //HWI
-            var tblHWIObj = tblList.Where(a => a.ossid > 200 && a.datetime.Date == DateTime.Now.Date.AddDays(-1)).ToList();
+            var tblHWIObj = tblList.Where(a => a.ossid > 200 && a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
             string query = "";
 
             var tblHWI = tblHWIObj.Select(a => a.tbl).Distinct();
@@ -76,7 +77,7 @@ where  vsmoname  like '%/GLOCELL%' ;";
             }
             sb.AppendLine("--####################################");
 
-            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" ";
+            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
             sb.Clear();
 
             File.WriteAllText("c:\\temp\\run_hwi_p1.sh", finalUqery);
@@ -118,7 +119,7 @@ where  vsmoname  like '%/GLOCELL%';";
             sb.AppendLine("-- ##########################");
             sb.AppendLine("-- LOAD TO MAIN");
 
-            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" ";
+            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
             sb.Clear();
 
             File.WriteAllText("c:\\temp\\run_hwi_p2.sh", finalUqery);
@@ -152,16 +153,16 @@ where  vsmoname  like '%/GLOCELL%';";
             }
 
 
-            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" ";
+            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
 
             File.WriteAllText("c:\\temp\\run_hwi_p3.sh", finalUqery);
         }
 
-        private static void ProcessENM(List<tblClass> tblList)
+        private static void ProcessENM(List<TblClass> tblList, int offset)
         {
             StringBuilder sb = new StringBuilder();
             //ENM
-            var tblENM = tblList.Where(a => a.ossid < 200 && a.datetime.Date == DateTime.Now.Date.AddDays(-1)).ToList();
+            var tblENM = tblList.Where(a => a.ossid < 200 && a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
             string query = "";
 
             sb.AppendLine("truncate table synch_tree;");
@@ -230,12 +231,12 @@ where motype = 'ManagedElement,vsDataRncFunction,vsDataUtranCell';";
                 sb.AppendLine(query);
             }
 
-            string finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" ";
+            string finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
 
-            File.WriteAllText("c:\\temp\\finalQuery.sql", finalUqery);
+            File.WriteAllText("c:\\temp\\run_enm_p1.sh", finalUqery);
         }
 
-        public class tblClass
+        public class TblClass
         {
             public string tbl { get; set; }
             public DateTime datetime { get; set; }
