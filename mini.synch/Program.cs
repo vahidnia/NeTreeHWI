@@ -11,7 +11,7 @@ namespace mini.synch
         static void Main(string[] args)
         {
 
-           
+
             foreach (var item in Directory.GetFiles("c:\\temp\\run\\"))
                 File.Delete(item);
 
@@ -32,6 +32,7 @@ namespace mini.synch
             int offset = -1;
             ProcessENM(tblList, offset);
             ProcessHWI(tblList, offset);
+            ProcessERI(tblList, offset);
         }
 
         private static void ProcessHWI(List<TblClass> tblList, int offset)
@@ -39,9 +40,13 @@ namespace mini.synch
             string finalUqery = "";
 
             StringBuilder sb = new StringBuilder();
-
+            //421
+            //423
+            //422
+            //424
+            //425
             //HWI
-            var tblHWIObj = tblList.Where(a => a.ossid > 200 && a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
+            var tblHWIObj = tblList.Where(a => (a.ossid == 421 || a.ossid == 422 || a.ossid == 423 || a.ossid == 424 || a.ossid == 425) && a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
             string query = "";
 
             var tblHWI = tblHWIObj.Select(a => a.tbl).Distinct();
@@ -80,7 +85,7 @@ where  vsmoname  like '%/GLOCELL%' ;";
                 sb.AppendLine(query); sb.AppendLine();
                 if (sb.Length > 50000)
                 {
-                    fileList.Add(sb.ToString()); 
+                    fileList.Add(sb.ToString());
                     sb.Clear();
                 }
             }
@@ -93,10 +98,10 @@ where  vsmoname  like '%/GLOCELL%' ;";
             }
 
 
-           // finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
-          //  sb.Clear();
+            // finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
+            //  sb.Clear();
 
-           // File.WriteAllText("c:\\temp\\run_hwi_p1.sh", finalUqery);
+            // File.WriteAllText("c:\\temp\\run_hwi_p1.sh", finalUqery);
 
 
             foreach (var item in tblHWI.Where(a => a.Contains("data")))
@@ -145,13 +150,13 @@ where  vsmoname  like '%/GLOCELL%';";
                 fileList.Add(sb.ToString());
                 sb.Clear();
             }
-          //  sb.AppendLine("-- ##########################");
-           // sb.AppendLine("-- LOAD TO MAIN");
+            //  sb.AppendLine("-- ##########################");
+            // sb.AppendLine("-- LOAD TO MAIN");
 
-          //  finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
-          //  sb.Clear();
+            //  finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
+            //  sb.Clear();
 
-          //  File.WriteAllText("c:\\temp\\run_hwi_p2.sh", finalUqery);
+            //  File.WriteAllText("c:\\temp\\run_hwi_p2.sh", finalUqery);
 
 
             query = $@"insert into vs_cm_tree select * from synch_tree_hwi;";
@@ -186,7 +191,7 @@ where  vsmoname  like '%/GLOCELL%';";
 
             File.WriteAllText("c:\\temp\\run\\finalHWI.sh", finalUqery);
 
-            string command = " time bash run_enm_p1.sh  ";
+            string command = " time bash run_enm_p1.sh &&  time bash run_eri_p1.sh  ";
             int i = 1;
             foreach (var item in fileList)
             {
@@ -204,7 +209,11 @@ where  vsmoname  like '%/GLOCELL%';";
         {
             StringBuilder sb = new StringBuilder();
             //ENM
-            var tblENM = tblList.Where(a => a.ossid < 200 && a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
+            //193
+            //192
+            //194
+            //191
+            var tblENM = tblList.Where(a => (a.ossid == 191 || a.ossid == 192 || a.ossid == 193 || a.ossid == 194) && a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
             string query = "";
 
             sb.AppendLine("truncate table synch_tree;");
@@ -278,6 +287,80 @@ where motype = 'ManagedElement,vsDataRncFunction,vsDataUtranCell';";
 
             File.WriteAllText("c:\\temp\\run\\run_enm_p1.sh", finalUqery);
         }
+
+        private static void ProcessERI(List<TblClass> tblList, int offset)
+        {
+            StringBuilder sb = new StringBuilder();
+            //ERI
+            //125
+            var tblENM = tblList.Where(a => (a.ossid == 125 ) && a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
+            string query = "";
+
+            sb.AppendLine("truncate table synch_tree;");
+            foreach (var item in tblENM.Where(a => a.tbl.Contains("tree")))
+            {
+                Console.WriteLine(item);
+                query = $@"insert into synch_tree  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+from  {item.tbl} vs inner join cm_all_cells cac on splitByChar(':',vs.vsmoname)[2] = cac.cell and splitByChar(':',vs.vsmoname)[1] = cac.node;";
+                sb.AppendLine(query);
+            }
+            sb.AppendLine("--####################################");
+            sb.AppendLine("truncate table synch_data;");
+            foreach (var item in tblENM.Where(a => a.tbl.Contains("data")))
+            {
+                Console.WriteLine(item.tbl);
+                query = $@"insert into synch_data  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
+select datadatetime,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue 
+from {item.tbl} vs inner join cm_all_cells cac on splitByChar(':',vs.vsmoname)[2] = cac.cell and splitByChar(':',vs.vsmoname)[1] = cac.node;";
+
+                sb.AppendLine(query);
+            }
+
+            sb.AppendLine("-- ##########################");
+            sb.AppendLine("-- LOAD TO MAIN");
+
+            query = $@"insert into vs_cm_tree select * from synch_tree;";
+            sb.AppendLine(query);
+
+
+            foreach (var item in tblENM.Where(a => a.tbl.Contains("tree")))
+            {
+                query = $@"insert into vs_cm_tree select * from {item.tbl} where motype not in (select  distinct motype from synch_tree );";
+                sb.AppendLine(query);
+            }
+
+            query = $@"insert into vs_cm_data select * from synch_data;";
+            sb.AppendLine(query);
+
+            foreach (var item in tblENM.Where(a => a.tbl.Contains("data")))
+            {
+                query = $@"insert into vs_cm_data select * from {item.tbl} where motype not in (select  distinct motype from synch_data );";
+                sb.AppendLine(query);
+            }
+
+            sb.AppendLine("-- ##########################");
+            sb.AppendLine("-- RENAMING TABLES TO X_ tables that is done");
+
+            foreach (var item in tblENM.Where(a => a.tbl.Contains("tree")))
+            {
+                query = $@"rename table  {item.tbl}  to x_{item.tbl};";
+                sb.AppendLine(query);
+            }
+
+
+            foreach (var item in tblENM.Where(a => a.tbl.Contains("data")))
+            {
+                query = $@"rename table  {item.tbl}  to x_{item.tbl};";
+                sb.AppendLine(query);
+            }
+
+            string finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
+
+
+            File.WriteAllText("c:\\temp\\run\\run_eri_p1.sh", finalUqery);
+        }
+
 
         public class TblClass
         {
