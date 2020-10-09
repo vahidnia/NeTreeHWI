@@ -11,6 +11,9 @@ namespace mini.synch
         static void Main(string[] args)
         {
 
+           
+            foreach (var item in Directory.GetFiles("c:\\temp\\run\\"))
+                File.Delete(item);
 
             var tblFile = File.ReadAllLines(@"C:\temp\cm.manager\cm_tbl_mng_202010060113.csv");
             List<TblClass> tblList = new List<TblClass>();
@@ -26,7 +29,7 @@ namespace mini.synch
                 });
             }
 
-            int offset = 0;
+            int offset = -1;
             ProcessENM(tblList, offset);
             ProcessHWI(tblList, offset);
         }
@@ -45,6 +48,8 @@ namespace mini.synch
 
             sb.AppendLine("truncate table synch_tree_hwi;");
             sb.AppendLine("truncate table synch_data_hwi;");
+            List<string> fileList = new List<string>();
+
             foreach (var item in tblHWI.Where(a => a.Contains("tree")))
             {
                 Console.WriteLine(item);
@@ -73,14 +78,25 @@ inner join mnp.cm_all_cells_hwi_glocell2  cac on cac.nename  =  substring(vsmona
 substring (vsmoname ,POSITION (vsmoname ,':')+1,LENGTH (vsmoname ) - POSITION (vsmoname ,':'))=cast (cac.glocellid  as String)
 where  vsmoname  like '%/GLOCELL%' ;";
                 sb.AppendLine(query); sb.AppendLine();
-
+                if (sb.Length > 50000)
+                {
+                    fileList.Add(sb.ToString()); 
+                    sb.Clear();
+                }
             }
-            sb.AppendLine("--####################################");
+            // sb.AppendLine("--####################################");
 
-            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
-            sb.Clear();
+            if (sb.Length > 0)
+            {
+                fileList.Add(sb.ToString());
+                sb.Clear();
+            }
 
-            File.WriteAllText("c:\\temp\\run_hwi_p1.sh", finalUqery);
+
+           // finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
+          //  sb.Clear();
+
+           // File.WriteAllText("c:\\temp\\run_hwi_p1.sh", finalUqery);
 
 
             foreach (var item in tblHWI.Where(a => a.Contains("data")))
@@ -114,15 +130,28 @@ substring (vsmoname ,POSITION (vsmoname ,':')+1,LENGTH (vsmoname ) - POSITION (v
 where  vsmoname  like '%/GLOCELL%';";
                 sb.AppendLine(query);
                 sb.AppendLine();
+
+                sb.AppendLine(query); sb.AppendLine();
+                if (sb.Length > 50000)
+                {
+                    fileList.Add(sb.ToString());
+                    sb.Clear();
+                }
+
             }
+            sb.AppendLine(query); sb.AppendLine();
+            if (sb.Length > 50000)
+            {
+                fileList.Add(sb.ToString());
+                sb.Clear();
+            }
+          //  sb.AppendLine("-- ##########################");
+           // sb.AppendLine("-- LOAD TO MAIN");
 
-            sb.AppendLine("-- ##########################");
-            sb.AppendLine("-- LOAD TO MAIN");
+          //  finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
+          //  sb.Clear();
 
-            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
-            sb.Clear();
-
-            File.WriteAllText("c:\\temp\\run_hwi_p2.sh", finalUqery);
+          //  File.WriteAllText("c:\\temp\\run_hwi_p2.sh", finalUqery);
 
 
             query = $@"insert into vs_cm_tree select * from synch_tree_hwi;";
@@ -155,7 +184,20 @@ where  vsmoname  like '%/GLOCELL%';";
 
             finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
 
-            File.WriteAllText("c:\\temp\\run_hwi_p3.sh", finalUqery);
+            File.WriteAllText("c:\\temp\\run\\finalHWI.sh", finalUqery);
+
+            string command = " time bash run_enm_p1.sh  ";
+            int i = 1;
+            foreach (var item in fileList)
+            {
+                finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{item.ToString()}"" >> run.log";
+                File.WriteAllText($"c:\\temp\\run\\hwistep{i}.sh", finalUqery);
+                command += $"&& time bash hwistep{i}.sh ";
+                i++;
+            }
+            command += " && time bash finalHWI.sh";
+            Console.WriteLine(command);
+
         }
 
         private static void ProcessENM(List<TblClass> tblList, int offset)
@@ -233,7 +275,8 @@ where motype = 'ManagedElement,vsDataRncFunction,vsDataUtranCell';";
 
             string finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
 
-            File.WriteAllText("c:\\temp\\run_enm_p1.sh", finalUqery);
+
+            File.WriteAllText("c:\\temp\\run\\run_enm_p1.sh", finalUqery);
         }
 
         public class TblClass

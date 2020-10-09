@@ -114,11 +114,14 @@ namespace GExportToKVP
                         Console.WriteLine($"{DateTime.Now.ToString()}  Processing {processedFileCount++}/{totalFileCount}");
                         Task.WaitAll(new Task[] { f1, f2 });
                         string fileName = Path.GetFileName(filePath);
-                        string ne = Regex.Match(fileName, @"(?<=^GExport_).+(?=_\d+\.\d+\.\d+\.\d+_)").Value;
+                        string ne = Regex.Match(fileName, @"GExport_(?<ne>.+)(?=_\d+\.\d+\.\d+\.\d+_)").Groups["ne"].Value;
                         Console.WriteLine(fileName);
                         var dateRegex = Regex.Match(fileName, @"(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)");
 
                         var dateTime = new DateTime(int.Parse(dateRegex.Groups[1].Value), int.Parse(dateRegex.Groups[2].Value), int.Parse(dateRegex.Groups[3].Value), 0, 0, 0).ToString("yyyy-MM-dd HH:mm:ss");
+
+                        if (string.IsNullOrEmpty(ne))
+                            throw new Exception("ne is empty"); 
 
                         if (fileName.EndsWith(".gz"))
                         {

@@ -23,6 +23,9 @@ namespace GExportToKVP
             Dictionary<string, string> pimonameDic = new Dictionary<string, string>();
             var eamNE = eamNElist.FirstOrDefault(a => a.NeName == ne);
 
+            if(eamNE == null)
+                throw new Exception("eamNE is null");
+
             XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
             {
                 DtdProcessing = DtdProcessing.Ignore,
