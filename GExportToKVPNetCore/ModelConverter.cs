@@ -156,7 +156,7 @@ namespace GExportToKVP
                             {
                                 Moc moc = new Moc();
                                 ReadMocs(xmlReader, level, moc, model.ExternalTypesEnums);
-                                model.Mocs.Add(moc.NeName.ToUpper(), moc);
+                                model.Mocs.Add(moc.OMCName.ToUpper(), moc);
                                 xmlReader.Read();
                             }
                             if (OperatingSystem.IsWindows())
