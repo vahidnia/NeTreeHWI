@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -29,7 +30,7 @@ namespace mini.synch
                 });
             }
 
-            int offset = -1;
+            int offset = 0;
             ProcessENM(tblList, offset);
             ProcessHWI(tblList, offset);
             ProcessERI(tblList, offset);
@@ -83,6 +84,25 @@ inner join mnp.cm_all_cells_hwi_glocell2  cac on cac.nename  =  substring(vsmona
 substring (vsmoname ,POSITION (vsmoname ,':')+1,LENGTH (vsmoname ) - POSITION (vsmoname ,':'))=cast (cac.glocellid  as String)
 where  vsmoname  like '%/GLOCELL%' ;";
                 sb.AppendLine(query); sb.AppendLine();
+
+
+                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+from  {item}  tbl
+inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
+toString(cac.ci  )=   reverse(SUBSTRING(reverse(vsmoname), 1 , POSITION (reverse(vsmoname), '=')-1 )) 
+where   motype in ( 'BSC6900UMTSNE,BSC6900UMTSFunction,UNODEB,UCELL', 'BSC6900UMTSNE,BSC6910UMTSFunction,URNCBASIC,UNODEB,UCELL');";
+                sb.AppendLine(query); sb.AppendLine();
+
+                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+from  {item}  tbl
+inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
+((toString(cac.hwi_cellindex  )=   reverse(SUBSTRING(reverse(vsmoname), 1 , POSITION (reverse(vsmoname), '=')-1 )) ))
+where   motype in ('BSC6910GSMNE,BSC6910GSMFunction,BTS,GCELL', 'BSC6900GSMNE,BSC6900GSMFunction,BTS,GCELL' );";
+                sb.AppendLine(query); sb.AppendLine();
+
+
                 if (sb.Length > 50000)
                 {
                     fileList.Add(sb.ToString());
@@ -133,6 +153,25 @@ from  {item}  tbl
 inner join mnp.cm_all_cells_hwi_glocell2  cac on cac.nename  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
 substring (vsmoname ,POSITION (vsmoname ,':')+1,LENGTH (vsmoname ) - POSITION (vsmoname ,':'))=cast (cac.glocellid  as String)
 where  vsmoname  like '%/GLOCELL%';";
+                sb.AppendLine(query);
+                sb.AppendLine();
+
+                query = $@"insert into synch_data_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
+select datadatetime,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue 
+from  {item}  tbl
+inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
+toString(cac.ci  )=   reverse(SUBSTRING(reverse(vsmoname), 1 , POSITION (reverse(vsmoname), '=')-1 )) 
+where   motype in ( 'BSC6900UMTSNE,BSC6900UMTSFunction,UNODEB,UCELL', 'BSC6900UMTSNE,BSC6910UMTSFunction,URNCBASIC,UNODEB,UCELL');";
+                sb.AppendLine(query);
+                sb.AppendLine();
+
+                query = $@"insert into synch_data_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
+select datadatetime,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue 
+from  {item}  tbl
+inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
+((toString(cac.hwi_cellindex  )=   reverse(SUBSTRING(reverse(vsmoname), 1 , POSITION (reverse(vsmoname), '=')-1 )) ))
+where   motype in ('BSC6910GSMNE,BSC6910GSMFunction,BTS,GCELL', 'BSC6900GSMNE,BSC6900GSMFunction,BTS,GCELL' );";
+
                 sb.AppendLine(query);
                 sb.AppendLine();
 
@@ -201,7 +240,10 @@ where  vsmoname  like '%/GLOCELL%';";
                 i++;
             }
             command += " && time bash finalHWI.sh";
+            Console.WriteLine("########");
             Console.WriteLine(command);
+            Console.WriteLine("########");
+            Console.WriteLine(@"c:\temp\run\");
 
         }
 
@@ -293,7 +335,7 @@ where motype = 'ManagedElement,vsDataRncFunction,vsDataUtranCell';";
             StringBuilder sb = new StringBuilder();
             //ERI
             //125
-            var tblENM = tblList.Where(a => (a.ossid == 125 ) && a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
+            var tblENM = tblList.Where(a => (a.ossid == 125) && a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
             string query = "";
 
             sb.AppendLine("truncate table synch_tree;");
