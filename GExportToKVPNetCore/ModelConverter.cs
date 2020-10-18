@@ -281,7 +281,9 @@ namespace GExportToKVP
 
                     }
                     else
-                    { }
+                    { 
+                        //unable to find type
+                    }
 
                 }
                 if (att.OMCName != "OBJID")

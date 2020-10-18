@@ -87,16 +87,9 @@ namespace GExportToKVP
 
                                     var model = models.Values.Where(a => a.DisplayVersion == version && a.NeTypeName == mainClassName).FirstOrDefault(a => a.Mocs.ContainsKey(className.ToUpper()));
 
-                                    //foreach (var model in models.Values.Where(a => a.DisplayVersion == version && a.NeTypeName == mainClassName))
-
                                     if (model != null)
                                     {
-                                        //if (!model.Mocs.ContainsKey(className.ToUpper()))
-                                        //    continue;
                                         var moc = model.Mocs[className.ToUpper()];
-
-                                        //Console.WriteLine()
-                                        // if (moc.KeyAttributes.Any(a => a.name == parameter.Key))
 
                                         neName = moc.NeName;
                                         omcName = moc.OMCName;
@@ -116,8 +109,6 @@ namespace GExportToKVP
                                             else
                                                 paramvaluetype = fileType;
 
-
-
                                             needToSplitParameter = (parameter.Value.Contains("-1&") || parameter.Value.Contains("-0&")) && isEnum;
                                             if (att.ExternalRef != "" && att.ExternalRef != "IPV4" && att.ExternalRef != null && needToSplitParameter == false)
                                             {
@@ -129,7 +120,6 @@ namespace GExportToKVP
                                                         if (pv == null)
                                                         {
                                                             paramValue = parameter.Value;
-                                                            //Console.WriteLine(parameter.Key);
                                                         }
                                                         else
                                                             paramValue = pv.Value;
@@ -146,18 +136,10 @@ namespace GExportToKVP
 
                                         }
                                         else
-                                        /// { if (parameter.Key != "NE") { Console.WriteLine(parameter.Key); continue; } }
                                         {
                                             if (parameter.Key != "NE" && parameter.Key != "OBJID")
-                                            {
-
-                                                //Console.WriteLine("param not find in mode: " + parameter.Key);
-                                                //Console.WriteLine(model.Path);
-                                                //continue;
-                                            }
+                                                Console.WriteLine("param not find in mode: " + parameter.Key);
                                         }
-
-
 
                                         if (needToSplitParameter)
                                         {
@@ -175,27 +157,20 @@ namespace GExportToKVP
                                         }
 
                                         paramvaluetype = paramvaluetype == null ? "\\N" : paramvaluetype;
-                                        //if (paramvaluetype != "\\N") { }
-                                        //var searchTreeItem = model.ModelTree.Descendants().FirstOrDefault(node => node.Name == omcName);
-
-                                        //var searchTreeItem = searchTree.FirstOrDefault();
-                                        //if (searchTreeItem != null)
                                         if (model.FlattenTree.ContainsKey(omcName))
                                         {
                                             var searchTreeItem = model.FlattenTree[omcName];
                                             HashSet<string> exsitingAtt = new HashSet<string>();
                                             vsmonameDic = new Dictionary<string, string>();
                                             pimoname = searchTreeItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne, vsmonameDic);
-                                            //vsmoname = string.Join(",", pimoname.Split(new char[] { '→' }).Skip(1));
                                             vsmoname = ne + "/" + className + (vsmonameDic.Count == 0 ? "" : "=" + string.Join(",", vsmonameDic.Select(a => a.Key + ":" + a.Value)));
                                             motype = searchTreeItem.Getmotype();
-                                            //break;
                                         }
                                     }
                                     else
                                     {
-                                        //Console.WriteLine($"Model not find for {parameter}");
-                                        //Console.WriteLine(parameter);
+                                        if (parameter.Key != "NE" && parameter.Key != "OBJID")
+                                            Console.WriteLine("param not find in mode: " + parameter.Key);
                                         continue;
                                     }
 
@@ -225,7 +200,6 @@ namespace GExportToKVP
                 int level = item.Count(a => a == '→');
                 if (level == 0)
                     continue;
-                //if (level == 1) { }
                 string parentpimoname = string.Join("→", item.Split('→').ToArray<string>().Take(item.Count(a => a == '→')));
 
                 ////cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}

@@ -89,7 +89,7 @@ namespace GExportToKVP
 
     }
 
-    public static class Extentions
+    public static class TreeExtentions
     {
         public static IEnumerable<Tree> Descendants(this Tree root)
         {

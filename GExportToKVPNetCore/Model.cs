@@ -41,7 +41,8 @@ namespace GExportToKVP
                 string key = item.ToString().Split(',').Last();
 
                 if (FlattenTree.ContainsKey(key))
-                { //Console.WriteLine($"key already exist in f-tree {key} \r\n {item} \r\n {FlattenTree[key]}"); 
+                { 
+                    //Console.WriteLine($"key already exist in f-tree {key} \r\n {item} \r\n {FlattenTree[key]}"); 
                 }
                 else
                     FlattenTree.Add(key, item);
@@ -54,8 +55,6 @@ namespace GExportToKVP
 
         public Moc()
         {
-            //KeyAttributes = new List<Attribute>();
-            //NorAttributes = new List<Attribute>();
             Attributes = new Dictionary<string, Attribute>();
         }
         public string name { get; set; }
@@ -64,8 +63,6 @@ namespace GExportToKVP
         public string isVirtual { get; set; }
         public string category { get; set; }
         public string type { get; set; }
-        //public List<Attribute> KeyAttributes { get; set; }
-        //public List<Attribute> NorAttributes { get; set; }
 
         public Dictionary<string, Attribute> Attributes { get; set; }
 
