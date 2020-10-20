@@ -60,8 +60,8 @@ namespace mini.synch
             {
                 Console.WriteLine(item);
 
-                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
-select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from {item} tbl
 inner join cm_all_cells cac on cac.basestation  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
 substring (vsmoname ,POSITION (vsmoname ,':')+1,LENGTH (vsmoname ) - POSITION (vsmoname ,':'))=cast (cac.localcellid  as String)
@@ -69,16 +69,16 @@ where motype  like 'BTS3900,NE,ENODEBFUNCTION,CELL%' and cm_all_cells.clid  = 32
                 sb.AppendLine(query);
                 sb.AppendLine();
 
-                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
-select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from {item} tbl
 inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
  substring(vsmoname ,POSITION(vsmoname ,'CELLID:')+7,LENGTH(vsmoname)-POSITION(vsmoname ,'CELLID:')+7) =cac.ci  
 where  motype like 'BSC6900UMTSNE,BSC6910UMTSFunction,RNCBASIC,UFLEXUEGROUPPRIO,UCELL,CELLSELRESEL'  and cm_all_cells.clid  = 321;";
                 sb.AppendLine(query); sb.AppendLine();
 
-                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
-select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,320 clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,320 clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from {item} tbl
 inner join mnp.cm_all_cells_hwi_glocell2  cac on cac.nename  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
 substring (vsmoname ,POSITION (vsmoname ,':')+1,LENGTH (vsmoname ) - POSITION (vsmoname ,':'))=cast (cac.glocellid  as String)
@@ -86,16 +86,16 @@ where  vsmoname  like '%/GLOCELL%' ;";
                 sb.AppendLine(query); sb.AppendLine();
 
 
-                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
-select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from  {item}  tbl
 inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
 toString(cac.ci  )=   reverse(SUBSTRING(reverse(vsmoname), 1 , POSITION (reverse(vsmoname), '=')-1 )) 
 where   motype in ( 'BSC6900UMTSNE,BSC6900UMTSFunction,UNODEB,UCELL', 'BSC6900UMTSNE,BSC6910UMTSFunction,URNCBASIC,UNODEB,UCELL');";
                 sb.AppendLine(query); sb.AppendLine();
 
-                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
-select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+                query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from  {item}  tbl
 inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
 ((toString(cac.hwi_cellindex  )=   reverse(SUBSTRING(reverse(vsmoname), 1 , POSITION (reverse(vsmoname), '=')-1 )) ))
@@ -198,21 +198,25 @@ where   motype in ('BSC6910GSMNE,BSC6910GSMFunction,BTS,GCELL', 'BSC6900GSMNE,BS
             //  File.WriteAllText("c:\\temp\\run_hwi_p2.sh", finalUqery);
 
 
-            query = $@"insert into vs_cm_tree select * from synch_tree_hwi;";
+            query = $@"insert into vs_cm_tree (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype) 
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype from synch_tree_hwi;";
             sb.AppendLine(query);
 
             foreach (var item in tblHWI.Where(a => a.Contains("tree")))
             {
-                query = $@"insert into vs_cm_tree select * from {item} where motype not in (select  distinct motype from synch_tree_hwi );";
+                query = $@"insert into vs_cm_tree (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype) 
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype from {item} where motype not in (select  distinct motype from synch_tree_hwi );";
                 sb.AppendLine(query);
             }
 
-            query = $@"insert into vs_cm_data select * from synch_data_hwi;";
+            query = $@"insert into vs_cm_data (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue from synch_data_hwi;";
             sb.AppendLine(query);
 
             foreach (var item in tblHWI.Where(a => a.Contains("data")))
             {
-                query = $@"insert into vs_cm_data select * from {item} where motype not in (select  distinct motype from synch_data_hwi );";
+                query = $@"insert into vs_cm_data (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue from {item} where motype not in (select  distinct motype from synch_data_hwi );";
                 sb.AppendLine(query);
             }
 
@@ -255,19 +259,20 @@ where   motype in ('BSC6910GSMNE,BSC6910GSMFunction,BTS,GCELL', 'BSC6900GSMNE,BS
             //192
             //194
             //191
-            var tblENM = tblList.Where(a => (a.ossid == 191 || a.ossid == 192 || a.ossid == 193 || a.ossid == 194) && a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
+            var tblENM = tblList.Where(a => (a.ossid == 191 || a.ossid == 192 || a.ossid == 193 || a.ossid == 194) && 
+            a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
             string query = "";
 
             sb.AppendLine("truncate table synch_tree;");
             foreach (var item in tblENM.Where(a => a.tbl.Contains("tree")))
             {
                 Console.WriteLine(item);
-                query = $@"insert into synch_tree  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
-select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+                query = $@"insert into synch_tree  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from  {item.tbl} vs inner join cm_all_cells cac on cac.cell = reverse(SUBSTRING(reverse(vs.vsmoname), 1 , POSITION (reverse(vs.vsmoname), '=')-1 )) where motype = 'ManagedElement,vsDataRncFunction,vsDataUtranCell';";
                 sb.AppendLine(query);
-                query = $@"insert into synch_tree  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
-select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+                query = $@"insert into synch_tree  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from  {item.tbl} vs inner join cm_all_cells cac on cac.cell = reverse(SUBSTRING(reverse(vs.vsmoname), 1 , POSITION (reverse(vs.vsmoname), '=')-1 )) where motype = 'ManagedElement,vsDataENodeBFunction,vsDataEUtranCellFDD';";
                 sb.AppendLine(query);
             }
@@ -289,22 +294,26 @@ where motype = 'ManagedElement,vsDataRncFunction,vsDataUtranCell';";
             sb.AppendLine("-- ##########################");
             sb.AppendLine("-- LOAD TO MAIN");
 
-            query = $@"insert into vs_cm_tree select * from synch_tree;";
+            query = $@"insert into vs_cm_tree (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype)
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype from synch_tree;";
             sb.AppendLine(query);
 
 
             foreach (var item in tblENM.Where(a => a.tbl.Contains("tree")))
             {
-                query = $@"insert into vs_cm_tree select * from {item.tbl} where motype not in (select  distinct motype from synch_tree );";
+                query = $@"insert into vs_cm_tree (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype) 
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype from {item.tbl} where motype not in (select  distinct motype from synch_tree );";
                 sb.AppendLine(query);
             }
 
-            query = $@"insert into vs_cm_data select * from synch_data;";
+            query = $@"insert into vs_cm_data (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue from synch_data;";
             sb.AppendLine(query);
 
             foreach (var item in tblENM.Where(a => a.tbl.Contains("data")))
             {
-                query = $@"insert into vs_cm_data select * from {item.tbl} where motype not in (select  distinct motype from synch_data );";
+                query = $@"insert into vs_cm_data (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue from {item.tbl} where motype not in (select  distinct motype from synch_data );";
                 sb.AppendLine(query);
             }
 
@@ -342,8 +351,8 @@ where motype = 'ManagedElement,vsDataRncFunction,vsDataUtranCell';";
             foreach (var item in tblENM.Where(a => a.tbl.Contains("tree")))
             {
                 Console.WriteLine(item);
-                query = $@"insert into synch_tree  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime) 
-select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ,insertdatetime 
+                query = $@"insert into synch_tree  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
+select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from  {item.tbl} vs inner join cm_all_cells cac on splitByChar(':',vs.vsmoname)[2] = cac.cell and splitByChar(':',vs.vsmoname)[1] = cac.node;";
                 sb.AppendLine(query);
             }
@@ -362,22 +371,26 @@ from {item.tbl} vs inner join cm_all_cells cac on splitByChar(':',vs.vsmoname)[2
             sb.AppendLine("-- ##########################");
             sb.AppendLine("-- LOAD TO MAIN");
 
-            query = $@"insert into vs_cm_tree select * from synch_tree;";
+            query = $@"insert into vs_cm_tree (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype) 
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype from synch_tree;";
             sb.AppendLine(query);
 
 
             foreach (var item in tblENM.Where(a => a.tbl.Contains("tree")))
             {
-                query = $@"insert into vs_cm_tree select * from {item.tbl} where motype not in (select  distinct motype from synch_tree );";
+                query = $@"insert into vs_cm_tree (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype) 
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype from {item.tbl} where motype not in (select  distinct motype from synch_tree );";
                 sb.AppendLine(query);
             }
 
-            query = $@"insert into vs_cm_data select * from synch_data;";
+            query = $@"insert into vs_cm_data (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue)
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue from synch_data;";
             sb.AppendLine(query);
 
             foreach (var item in tblENM.Where(a => a.tbl.Contains("data")))
             {
-                query = $@"insert into vs_cm_data select * from {item.tbl} where motype not in (select  distinct motype from synch_data );";
+                query = $@"insert into vs_cm_data (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue)
+select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue from {item.tbl} where motype not in (select  distinct motype from synch_data );";
                 sb.AppendLine(query);
             }
 
