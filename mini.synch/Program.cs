@@ -230,7 +230,7 @@ select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramnam
             }
 
 
-            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
+            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=10485760000 --min_insert_block_size_rows=10485760000   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
 
             File.WriteAllText("c:\\temp\\run\\finalHWI.sh", finalUqery);
 
@@ -238,7 +238,7 @@ select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramnam
             int i = 1;
             foreach (var item in fileList)
             {
-                finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{item.ToString()}"" >> run.log";
+                finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=10485760000 --min_insert_block_size_rows=10485760000   -d mnp -n -m --query=""{item.ToString()}"" >> run.log";
                 File.WriteAllText($"c:\\temp\\run\\hwistep{i}.sh", finalUqery);
                 command += $"&& time bash hwistep{i}.sh ";
                 i++;
@@ -333,7 +333,7 @@ select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramnam
                 sb.AppendLine(query);
             }
 
-            string finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
+            string finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=10485760000 --min_insert_block_size_rows=10485760000   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
 
 
             File.WriteAllText("c:\\temp\\run\\run_enm_p1.sh", finalUqery);
@@ -410,7 +410,7 @@ select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramnam
                 sb.AppendLine(query);
             }
 
-            string finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=104857600 --min_insert_block_size_rows=104857600   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
+            string finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=10485760000 --min_insert_block_size_rows=10485760000   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log ";
 
 
             File.WriteAllText("c:\\temp\\run\\run_eri_p1.sh", finalUqery);

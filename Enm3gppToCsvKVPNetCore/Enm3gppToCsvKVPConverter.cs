@@ -85,8 +85,17 @@ namespace Enm3gppToCsvKVPNetCore
 
                 List<StreamWriter> streamWriter = new List<StreamWriter>();
 
-                streamWriter.Add(new StreamWriter(Path.Combine(Path.GetDirectoryName(csv), "Data+" + Path.GetFileName(csv)), false));
-                streamWriter.Add(new StreamWriter(Path.Combine(Path.GetDirectoryName(csv), "Tree+" + Path.GetFileName(csv)), false));
+                string dataFilePath = Path.Combine(Path.GetDirectoryName(csv), "Data+" + Path.GetFileName(csv));
+                string treeFilePath = Path.Combine(Path.GetDirectoryName(csv), "Tree+" + Path.GetFileName(csv));
+
+                FileStream dataFileStream = File.Create(dataFilePath + ".gz");
+                FileStream treeFileStream = File.Create(treeFilePath + ".gz");
+
+                GZipStream compressData = new GZipStream(dataFileStream, CompressionMode.Compress);
+                GZipStream compressTree = new GZipStream(treeFileStream, CompressionMode.Compress);
+
+                streamWriter.Add(new StreamWriter(compressData));
+                streamWriter.Add(new StreamWriter(compressTree));
 
                 List<KeyValuePair<string, string>> ossPrefixes = new List<KeyValuePair<string, string>>();
                 List<KeyValuePair<string, string>> path = new List<KeyValuePair<string, string>>();
