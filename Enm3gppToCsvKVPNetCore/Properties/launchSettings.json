@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Enm3gppToCsvKVPNetCore": {
+      "commandName": "Project",
+      "commandLineArgs": "D:\\Develop\\cm\\raw\\ENM_OSS_HBENM_OSSID-191_scheduled_export_3GPP_2020-10-28T05-00-00-005_bd921d2f-ccb6-48ee-843f-98d8ce1aa084.xml  D:\\Develop\\cm\\model  D:\\Develop\\cm\\model "
+    }
+  }
+}

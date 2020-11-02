@@ -19,7 +19,7 @@ namespace GExportToKVP
             this.Parent = Parent;
         }
 
-        private Tree Parent;
+        public Tree Parent;
         public string Name { get; set; }
         public int Level { get; set; }
         public List<Tree> Children = new List<Tree>();
