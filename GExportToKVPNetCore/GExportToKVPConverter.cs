@@ -23,7 +23,7 @@ namespace GExportToKVP
             Dictionary<string, string> pimonameDic = new Dictionary<string, string>();
             var eamNE = eamNElist.FirstOrDefault(a => a.NeName == ne);
 
-            if(eamNE == null)
+            if (eamNE == null)
                 throw new Exception("eamNE is null");
 
             XmlReaderSettings xmlReaderSettings = new XmlReaderSettings
@@ -95,6 +95,7 @@ namespace GExportToKVP
                                         omcName = moc.OMCName;
 
                                         bool needToSplitParameter = false;
+                                        bool needToSplitSingleBitParameter = false;
 
                                         if (moc.Attributes.ContainsKey(parameter.Key))
                                         {
@@ -125,7 +126,10 @@ namespace GExportToKVP
                                                             paramValue = pv.Value;
                                                     }
                                                     else
+                                                    {
                                                         paramValue = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesBitEnumItemList.FirstOrDefault(a => a.name == parameter.Value.Split('-')[0]).index;
+                                                        needToSplitSingleBitParameter = true;
+                                                    }
                                                 }
                                                 else
                                                 {
@@ -150,6 +154,13 @@ namespace GExportToKVP
                                                 string parameterSwitchValue = parameterSwitchNameAndValue[1];
                                                 switchparameters.Add(parameter.Key + "." + parameterSwitchName, parameterSwitchValue);
                                             }
+                                        }
+                                        else if (needToSplitSingleBitParameter)
+                                        {
+                                            string[] parameterSwitchNameAndValue = parameter.Value.Split('-');
+                                            string parameterSwitchName = parameterSwitchNameAndValue[0];
+                                            string parameterSwitchValue = parameterSwitchNameAndValue[1];
+                                            switchparameters.Add(parameter.Key + "." + parameterSwitchName, parameterSwitchValue);
                                         }
                                         else
                                         {
