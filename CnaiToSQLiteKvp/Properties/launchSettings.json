@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CnaiToSQLiteKvp": {
+      "commandName": "Project",
+      "commandLineArgs": "c:\\Develop\\cm\\raw\\eri2g\\ERI_2G_OSS_5OSSID-125+12-10-2020.cnai_all_export.txt"
+    }
+  }
+}
