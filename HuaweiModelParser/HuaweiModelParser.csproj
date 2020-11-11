@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SQLitePCLRaw.core" Version="2.0.4" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.0.4" />
+    <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="model.BSC6900GSM.V900R019ENGC10SPC510.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6900GSM.V900R021ENGC10SPC610.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6900GSM.V900R022ENGC10SPC510.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6900UMTS.V900R019ENGC10SPC510.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6900UMTS.V900R020ENGC10SPC550.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6900UMTS.V900R021ENGC10SPC610.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6900UMTS.V900R022ENGC10SPC510.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6910GSM.V100R019ENGC10SPC510.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6910GSM.V100R020ENGC10SPC535.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6910GSM.V100R021ENGC10SPC610.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6910GSM.V100R022ENGC10SPC510.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6910UMTS.V100R019ENGC10SPC510.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6910UMTS.V100R020ENGC10SPC535 .xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6910UMTS.V100R021ENGC10SPC610.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="model.BSC6910UMTS.V100R022ENGC10SPC510.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

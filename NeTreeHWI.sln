@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Enm3gppToCsvKVPNetCore", "E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GExportToKVPNetCore", "GExportToKVPNetCore\GExportToKVPNetCore.csproj", "{AF06D0A4-40C8-454A-8FEF-BBFE63AF16AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mini.synch", "mini.synch\mini.synch.csproj", "{FB9D6748-5827-40A5-8956-312EDBA9AD20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mini.synch", "mini.synch\mini.synch.csproj", "{FB9D6748-5827-40A5-8956-312EDBA9AD20}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuaweiModelParser", "HuaweiModelParser\HuaweiModelParser.csproj", "{70258C85-A26E-4F2A-84B4-F0174705A49C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{FB9D6748-5827-40A5-8956-312EDBA9AD20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB9D6748-5827-40A5-8956-312EDBA9AD20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB9D6748-5827-40A5-8956-312EDBA9AD20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70258C85-A26E-4F2A-84B4-F0174705A49C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70258C85-A26E-4F2A-84B4-F0174705A49C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70258C85-A26E-4F2A-84B4-F0174705A49C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70258C85-A26E-4F2A-84B4-F0174705A49C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
