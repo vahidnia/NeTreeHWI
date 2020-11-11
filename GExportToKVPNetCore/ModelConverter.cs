@@ -157,21 +157,6 @@ namespace GExportToKVP
                                 Moc moc = new Moc();
                                 ReadMocs(xmlReader, level, moc, model.ExternalTypesEnums);
                                 model.Mocs.Add(moc.OMCName.ToUpper(), moc);
-                                if (moc.OMCName.ToUpper() == "CELL")
-                                {
-                                    Moc mocNBIOT = new Moc()
-                                    {
-                                        Attributes = moc.Attributes,
-                                        NeName = "nbiotcell",
-                                        OMCName = "NBIOTCELL",
-                                        category = moc.category,
-                                        isVirtual = moc.isVirtual,
-                                        name = "nbiotcell",
-                                        type = moc.category
-                                    };
-
-                                    model.Mocs.Add("NBIOTCELL", mocNBIOT);
-                                }
                                 xmlReader.Read();
                             }
                             if (OperatingSystem.IsWindows())
@@ -213,28 +198,6 @@ namespace GExportToKVP
                 {
                     model.ModelTree = tree;
                     model.DescendantsTree();
-
-                    if (model.FlattenTree.ContainsKey("CELL"))
-                    {
-                        var treeCell = model.FlattenTree["CELL"];
-                        Tree nbiotTree = new Tree(treeCell.Parent)
-                        {
-                            Level = treeCell.Level,
-                            Name = "NBIOTCELL"
-                        };
-                        nbiotTree.Children = new List<Tree>();
-
-                        foreach (var item in treeCell.Children)
-                        {
-                            nbiotTree.Children.Add(new Tree(nbiotTree)
-                            {
-                                Level = item.Level,
-                                Name = item.Name
-                            });
-                        }
-                        model.FlattenTree.Add("NBIOTCELL", nbiotTree);
-                    }
-                  
                 }
                 else
                 {

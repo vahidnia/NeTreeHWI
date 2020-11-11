@@ -51,7 +51,7 @@ namespace mini.synch
             string query = "";
 
             var tblHWI = tblHWIObj.Select(a => a.tbl).Distinct();
-
+         
             sb.AppendLine("truncate table synch_tree_hwi;");
             sb.AppendLine("truncate table synch_data_hwi;");
             List<string> fileList = new List<string>();
@@ -63,7 +63,7 @@ namespace mini.synch
                 query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
 select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from {item} tbl
-inner join cm_all_cells cac on cac.basestation  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
+left outer join cm_all_cells cac on cac.basestation  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
 substring (vsmoname ,POSITION (vsmoname ,':')+1,LENGTH (vsmoname ) - POSITION (vsmoname ,':'))=cast (cac.localcellid  as String)
 where motype  like 'BTS3900,NE,ENODEBFUNCTION,CELL%' and cm_all_cells.clid  = 322;";
                 sb.AppendLine(query);
@@ -72,7 +72,7 @@ where motype  like 'BTS3900,NE,ENODEBFUNCTION,CELL%' and cm_all_cells.clid  = 32
                 query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
 select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from {item} tbl
-inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
+left outer join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
  substring(vsmoname ,POSITION(vsmoname ,'CELLID:')+7,LENGTH(vsmoname)-POSITION(vsmoname ,'CELLID:')+7) =cac.ci  
 where  motype like 'BSC6900UMTSNE,BSC6910UMTSFunction,RNCBASIC,UFLEXUEGROUPPRIO,UCELL,CELLSELRESEL'  and cm_all_cells.clid  = 321;";
                 sb.AppendLine(query); sb.AppendLine();
@@ -80,7 +80,7 @@ where  motype like 'BSC6900UMTSNE,BSC6910UMTSFunction,RNCBASIC,UFLEXUEGROUPPRIO,
                 query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
 select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,320 clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from {item} tbl
-inner join mnp.cm_all_cells_hwi_glocell2  cac on cac.nename  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
+left outer join mnp.cm_all_cells_hwi_glocell2  cac on cac.nename  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
 substring (vsmoname ,POSITION (vsmoname ,':')+1,LENGTH (vsmoname ) - POSITION (vsmoname ,':'))=cast (cac.glocellid  as String)
 where  vsmoname  like '%/GLOCELL%' ;";
                 sb.AppendLine(query); sb.AppendLine();
@@ -89,7 +89,7 @@ where  vsmoname  like '%/GLOCELL%' ;";
                 query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
 select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from  {item}  tbl
-inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
+left outer join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
 toString(cac.ci  )=   reverse(SUBSTRING(reverse(vsmoname), 1 , POSITION (reverse(vsmoname), '=')-1 )) 
 where   motype in ( 'BSC6900UMTSNE,BSC6900UMTSFunction,UNODEB,UCELL', 'BSC6900UMTSNE,BSC6910UMTSFunction,URNCBASIC,UNODEB,UCELL');";
                 sb.AppendLine(query); sb.AppendLine();
@@ -97,7 +97,7 @@ where   motype in ( 'BSC6900UMTSNE,BSC6900UMTSFunction,UNODEB,UCELL', 'BSC6900UM
                 query = $@"insert into synch_tree_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid, treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype ) 
 select datadatetime ,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,treeelementclass ,netopologyfolder ,treedepth ,parentpimoname ,pimoname ,vsmoname ,displayvsmoname ,motype  
 from  {item}  tbl
-inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
+left outer join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
 ((toString(cac.hwi_cellindex  )=   reverse(SUBSTRING(reverse(vsmoname), 1 , POSITION (reverse(vsmoname), '=')-1 )) ))
 where   motype in ('BSC6910GSMNE,BSC6910GSMFunction,BTS,GCELL', 'BSC6900GSMNE,BSC6900GSMFunction,BTS,GCELL' );";
                 sb.AppendLine(query); sb.AppendLine();
@@ -132,7 +132,7 @@ where   motype in ('BSC6910GSMNE,BSC6910GSMFunction,BTS,GCELL', 'BSC6900GSMNE,BS
                 query = $@"insert into synch_data_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
 select datadatetime,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue 
 from  {item}  tbl
-inner join cm_all_cells cac on cac.basestation  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
+left outer join cm_all_cells cac on cac.basestation  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
 substring (vsmoname ,POSITION (vsmoname ,':')+1,LENGTH (vsmoname ) - POSITION (vsmoname ,':'))=cast (cac.localcellid  as String)
 where motype  like  'BTS3900,NE,ENODEBFUNCTION,CELL%' and cm_all_cells.clid  = 322;";
                 sb.AppendLine(query);
@@ -141,7 +141,7 @@ where motype  like  'BTS3900,NE,ENODEBFUNCTION,CELL%' and cm_all_cells.clid  = 3
                 query = $@"insert into synch_data_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
 select datadatetime,cac.cellid pk1,pk2,pk3,pk4,cac.clid clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue 
 from  {item}  tbl
-inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
+left outer join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
  substring(vsmoname ,POSITION(vsmoname ,'CELLID:')+7,LENGTH(vsmoname)-POSITION(vsmoname ,'CELLID:')+7) =cac.ci  
 where  motype like 'BSC6900UMTSNE,BSC6910UMTSFunction,RNCBASIC,UFLEXUEGROUPPRIO,UCELL,CELLSELRESEL'  and cm_all_cells.clid  = 321;";
                 sb.AppendLine(query);
@@ -150,7 +150,7 @@ where  motype like 'BSC6900UMTSNE,BSC6910UMTSFunction,RNCBASIC,UFLEXUEGROUPPRIO,
                 query = $@"insert into synch_data_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
 select datadatetime,cac.cellid pk1,pk2,pk3,pk4,320 clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue 
 from  {item}  tbl
-inner join mnp.cm_all_cells_hwi_glocell2  cac on cac.nename  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
+left outer join  mnp.cm_all_cells_hwi_glocell2  cac on cac.nename  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1) and  
 substring (vsmoname ,POSITION (vsmoname ,':')+1,LENGTH (vsmoname ) - POSITION (vsmoname ,':'))=cast (cac.glocellid  as String)
 where  vsmoname  like '%/GLOCELL%';";
                 sb.AppendLine(query);
@@ -159,7 +159,7 @@ where  vsmoname  like '%/GLOCELL%';";
                 query = $@"insert into synch_data_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
 select datadatetime,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue 
 from  {item}  tbl
-inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
+left outer join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
 toString(cac.ci  )=   reverse(SUBSTRING(reverse(vsmoname), 1 , POSITION (reverse(vsmoname), '=')-1 )) 
 where   motype in ( 'BSC6900UMTSNE,BSC6900UMTSFunction,UNODEB,UCELL', 'BSC6900UMTSNE,BSC6910UMTSFunction,URNCBASIC,UNODEB,UCELL');";
                 sb.AppendLine(query);
@@ -168,7 +168,7 @@ where   motype in ( 'BSC6900UMTSNE,BSC6900UMTSFunction,UNODEB,UCELL', 'BSC6900UM
                 query = $@"insert into synch_data_hwi  (datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue) 
 select datadatetime,cac.cellid pk1,pk2,pk3,pk4,cac.clid,ossid,vsmoname,pimoname,motype,paramname,paramvalue 
 from  {item}  tbl
-inner join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
+left outer join cm_all_cells cac on cac.node  =  substring(vsmoname,1, POSITION (vsmoname ,'/')-1)  and 
 ((toString(cac.hwi_cellindex  )=   reverse(SUBSTRING(reverse(vsmoname), 1 , POSITION (reverse(vsmoname), '=')-1 )) ))
 where   motype in ('BSC6910GSMNE,BSC6910GSMFunction,BTS,GCELL', 'BSC6900GSMNE,BSC6900GSMFunction,BTS,GCELL' );";
 
@@ -230,7 +230,7 @@ select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramnam
             }
 
 
-            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=10485760000 --min_insert_block_size_rows=10485760000   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
+            finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000 --join_use_null=1  --max_insert_threads=8  --max_insert_block_size=10485760000 --min_insert_block_size_rows=10485760000   -d mnp -n -m --query=""{sb.ToString()}"" >> run.log";
 
             File.WriteAllText("c:\\temp\\run\\finalHWI.sh", finalUqery);
 
@@ -238,7 +238,7 @@ select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramnam
             int i = 1;
             foreach (var item in fileList)
             {
-                finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000  --max_insert_threads=8  --max_insert_block_size=10485760000 --min_insert_block_size_rows=10485760000   -d mnp -n -m --query=""{item.ToString()}"" >> run.log";
+                finalUqery = $@"clickhouse-client -h 10.167.44.10 --port 9000 --join_use_null=1   --max_insert_threads=8  --max_insert_block_size=10485760000 --min_insert_block_size_rows=10485760000   -d mnp -n -m --query=""{item.ToString()}"" >> run.log";
                 File.WriteAllText($"c:\\temp\\run\\hwistep{i}.sh", finalUqery);
                 command += $"&& time bash hwistep{i}.sh ";
                 i++;
@@ -259,7 +259,7 @@ select datadatetime,pk1,pk2,pk3,pk4,clid,ossid,vsmoname,pimoname,motype,paramnam
             //192
             //194
             //191
-            var tblENM = tblList.Where(a => (a.ossid == 191 || a.ossid == 192 || a.ossid == 193 || a.ossid == 194) && 
+            var tblENM = tblList.Where(a => (a.ossid == 191 || a.ossid == 192 || a.ossid == 193 || a.ossid == 194) &&
             a.datetime.Date == DateTime.Now.Date.AddDays(offset)).ToList();
             string query = "";
 

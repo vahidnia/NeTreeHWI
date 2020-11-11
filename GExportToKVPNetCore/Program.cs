@@ -152,6 +152,8 @@ namespace GExportToKVP
 
                             foreach (var item in result)
                                 streamWriter[0].Write(datedatetime + "\t" + ossid + "\t" + item + "\n");
+                          
+                            File.Delete(fileName);
                         }
                         else
                         {
@@ -164,7 +166,7 @@ namespace GExportToKVP
                         string fileDestincation = Path.Combine(moveTo, Path.GetFileName(filePath));
                         if (File.Exists(fileDestincation))
                             File.Delete(fileDestincation);
-                        File.Move(filePath, fileDestincation);
+                        File.Move(filePath, fileDestincation);                    
                     }
                     catch (Exception ex)
                     {

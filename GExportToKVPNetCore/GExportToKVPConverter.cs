@@ -84,12 +84,15 @@ namespace GExportToKVP
                                     string paramValue = parameter.Value;
 
                                     Dictionary<string, string> switchparameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                                    string classNameInt = className.ToUpper();
+                                    if (className.ToUpper() == "NBIOTCELL")
+                                        classNameInt = "CELL";
 
-                                    var model = models.Values.Where(a => a.DisplayVersion == version && a.NeTypeName == mainClassName).FirstOrDefault(a => a.Mocs.ContainsKey(className.ToUpper()));
+                                    var model = models.Values.Where(a => a.DisplayVersion == version && a.NeTypeName == mainClassName).FirstOrDefault(a => a.Mocs.ContainsKey(classNameInt));
 
                                     if (model != null)
                                     {
-                                        var moc = model.Mocs[className.ToUpper()];
+                                        var moc = model.Mocs[classNameInt];
 
                                         neName = moc.NeName;
                                         omcName = moc.OMCName;
@@ -141,8 +144,8 @@ namespace GExportToKVP
                                         }
                                         else
                                         {
-                                            if (parameter.Key != "NE" && parameter.Key != "OBJID")
-                                                Console.WriteLine("param not find in mode: " + parameter.Key);
+                                            //if (parameter.Key != "NE" && parameter.Key != "OBJID")
+                                            //    Console.WriteLine("param not find in mode: " + parameter.Key);
                                         }
 
                                         if (needToSplitParameter)
@@ -174,14 +177,14 @@ namespace GExportToKVP
                                             HashSet<string> exsitingAtt = new HashSet<string>();
                                             vsmonameDic = new Dictionary<string, string>();
                                             pimoname = searchTreeItem.GetPiMoname(model.Mocs, parameters, exsitingAtt, ne, vsmonameDic);
-                                            vsmoname = ne + "/" + className + (vsmonameDic.Count == 0 ? "" : "=" + string.Join(",", vsmonameDic.Select(a => a.Key + ":" + a.Value)));
+                                            vsmoname = ne + "/" + classNameInt + (vsmonameDic.Count == 0 ? "" : "=" + string.Join(",", vsmonameDic.Select(a => a.Key + ":" + a.Value)));
                                             motype = searchTreeItem.Getmotype();
                                         }
                                     }
                                     else
                                     {
-                                        if (parameter.Key != "NE" && parameter.Key != "OBJID")
-                                            Console.WriteLine("param not find in mode: " + parameter.Key);
+                                        //if (parameter.Key != "NE" && parameter.Key != "OBJID")
+                                        //    Console.WriteLine("param not find in mode: " + parameter.Key);
                                         continue;
                                     }
 
