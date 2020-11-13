@@ -102,6 +102,7 @@ namespace HuaweiModelParser
                                     string parameterValue = xParameter.Attribute("value").Value;
                                     huaweiModelClass.AttrByAttrName.TryGetValue(parameterName, out HuaweiModelClassAttr huaweiModelClassAttr);
                                     bool isSwitch = huaweiModelClassAttr != null && huaweiModelClassAttr.AttrType.StartsWith("BitMap_");
+                                    bool isEnum = huaweiModelClassAttr != null && huaweiModelClassAttr.AttrType.StartsWith("Enum_");
                                     if (isSwitch)
                                     {
                                         foreach (string parameterSwitch in parameterValue.Split('&'))
@@ -111,6 +112,11 @@ namespace HuaweiModelParser
                                             string parameterSwitchValue = parameterSwitchParts[1];
                                             parameters.Add(new KeyValuePair<string, string>(parameterSwitchName, parameterSwitchValue));
                                         }
+                                    }
+                                    else if (isEnum)
+                                    {
+                                        string mappedValue = huaweiModel.GetHuaweiModelTypeValue(huaweiModelClassAttr.AttrType, parameterValue);
+                                        parameters.Add(new KeyValuePair<string, string>(parameterName, mappedValue));
                                     }
                                     else
                                     {

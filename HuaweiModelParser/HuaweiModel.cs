@@ -14,15 +14,19 @@ namespace HuaweiModelParser
         private readonly IReadOnlyDictionary<string, HuaweiModelClass> _huaweiModelClassById;
         private readonly IReadOnlyDictionary<string, HuaweiModelClass> _huaweiModelClassByClassName;
         private readonly IReadOnlyDictionary<string, TreeItem> _treeItemByClassName;
+        private readonly IReadOnlyDictionary<string, Dictionary<string, string>> _treeType;
 
         public HuaweiModel(
             IReadOnlyDictionary<string, HuaweiModelClass> huaweiModelClassById,
             IReadOnlyDictionary<string, HuaweiModelClass> huaweiModelClassByClassName,
-            IReadOnlyDictionary<string, TreeItem> treeItemByClassName)
+            IReadOnlyDictionary<string, TreeItem> treeItemByClassName,
+            IReadOnlyDictionary<string, Dictionary<string, string>> treeType)
         {
             _huaweiModelClassById = huaweiModelClassById;
             _huaweiModelClassByClassName = huaweiModelClassByClassName;
             _treeItemByClassName = treeItemByClassName;
+            _treeType = treeType;
+
         }
 
         public HuaweiModelClass GetHuaweiModelClassUsingGExportClassName(string gExportClassName)
@@ -39,6 +43,12 @@ namespace HuaweiModelParser
         {
             _treeItemByClassName.TryGetValue(huaweiModelClass.ClassName, out TreeItem treeItem);
             return treeItem?.ClassAggr;
+        }
+
+        public string GetHuaweiModelTypeValue(string typeName, string typeValue)
+        {
+            _treeType[typeName].TryGetValue(typeValue, out string value);
+            return string.IsNullOrWhiteSpace(value) == true ? typeValue : value;
         }
 
         // GExport-object based methods
@@ -62,6 +72,8 @@ namespace HuaweiModelParser
 
         public static HuaweiModel LoadFromFile(string modelFilePath)
         {
+            Dictionary<string, Dictionary<string, string>> hwiUserTypeList = new Dictionary<string, Dictionary<string, string>>();
+
             List<HuaweiModelClass> huaweiModelClassList = new List<HuaweiModelClass>();
             List<HuaweiModelClassAsso> huaweiModelClassAssoList = new List<HuaweiModelClassAsso>();
             List<HuaweiModelClassAggr> huaweiModelClassAggrList = new List<HuaweiModelClassAggr>();
@@ -71,6 +83,45 @@ namespace HuaweiModelParser
             XNamespace xNs = xModel.GetDefaultNamespace();
             foreach (XElement xModule in xModel.Elements(xNs + "Module"))
             {
+                foreach (XElement xClass in xModule.Elements(xNs + "TypeDef"))
+                {
+                    string className = xClass.Attribute("TypeCategory").Value;
+                    foreach (XElement xAttr in xClass.Elements(xNs + "UserType"))
+                    {
+                        string typeName = xAttr.Attribute("TypeName").Value;
+                        if (!hwiUserTypeList.ContainsKey(typeName))
+                            hwiUserTypeList.Add(typeName, new Dictionary<string, string>());
+
+                        var element = xAttr.Elements().FirstOrDefault();
+                        if (element == null)
+                        {
+                            continue;
+                        }
+                        string baseType = element.Attribute("Base").Value;
+
+                        foreach (XElement xBitmap in element.Elements(xNs + "BitMapItem"))
+                        {
+                            hwiUserTypeList[typeName].TryAdd(xBitmap.Attribute("ItemName").Value, xBitmap.Attribute("BitIndex").Value);
+                        }
+
+                        foreach (XElement xBitmap in element.Elements(xNs + "Enumeration"))
+                        {
+                            hwiUserTypeList[typeName].TryAdd(xBitmap.Attribute("Enumerator").Value, xBitmap.Attribute("EValue").Value);
+                        }
+
+                        foreach (XElement xBitmap in element.Elements(xNs + "Pattern"))
+                        {
+                            //  hwiUserTypeList[typeName].Add(new HuaweiType() { Name = "", TypeCategory = HuaweiType.TypeCategoryEnum.Pattern, Value = "" });
+                        }
+
+                        foreach (XElement xBitmap in element.Elements(xNs + "Primitive"))
+                        {
+                            //  hwiUserTypeList[typeName].Add(new HuaweiType() { Name = "", TypeCategory = HuaweiType.TypeCategoryEnum.Primitive, Value = "" });
+                        }
+                    }
+
+                }
+
                 foreach (XElement xClass in xModule.Elements(xNs + "Class"))
                 {
                     string className = xClass.Attribute("ClassName").Value;
@@ -192,7 +243,8 @@ namespace HuaweiModelParser
             return new HuaweiModel(
                 huaweiModelClassList.ToDictionary(o => o.ID),
                 huaweiModelClassByClassName,
-                treeItemByClassName);
+                treeItemByClassName,
+                hwiUserTypeList);
         }
     }
 }

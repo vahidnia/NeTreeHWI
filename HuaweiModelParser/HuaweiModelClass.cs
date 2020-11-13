@@ -24,5 +24,7 @@ namespace HuaweiModelParser
             Attrs = attrs;
             AttrByAttrName = attrs.ToDictionary(o => o.AttrName);
         }
+
+        public Dictionary<string, Dictionary<string, string>> HuaweiType { get; set; }
     }
 }
