@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuaweiModelParser", "Huawei
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CnaiToSQLiteKvp", "CnaiToSQLiteKvp\CnaiToSQLiteKvp.csproj", "{F6ADAAB1-32EB-4AAF-811B-4C635A2BD69B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreLoader", "CoreLoader\CoreLoader.csproj", "{2362A761-82EE-44BF-8AE9-2632C5206A5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{F6ADAAB1-32EB-4AAF-811B-4C635A2BD69B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6ADAAB1-32EB-4AAF-811B-4C635A2BD69B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6ADAAB1-32EB-4AAF-811B-4C635A2BD69B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2362A761-82EE-44BF-8AE9-2632C5206A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2362A761-82EE-44BF-8AE9-2632C5206A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2362A761-82EE-44BF-8AE9-2632C5206A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2362A761-82EE-44BF-8AE9-2632C5206A5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
