@@ -47,7 +47,7 @@ namespace HuaweiModelParser
 
         public string GetHuaweiModelTypeValue(string typeName, string typeValue)
         {
-            _treeType[typeName].TryGetValue(typeValue, out string value);
+            _treeType[typeName].TryGetValue(typeValue.ToUpper(), out string value);
             return string.IsNullOrWhiteSpace(value) == true ? typeValue : value;
         }
 
@@ -101,12 +101,12 @@ namespace HuaweiModelParser
 
                         foreach (XElement xBitmap in element.Elements(xNs + "BitMapItem"))
                         {
-                            hwiUserTypeList[typeName].TryAdd(xBitmap.Attribute("ItemName").Value, xBitmap.Attribute("BitIndex").Value);
+                            hwiUserTypeList[typeName].TryAdd(xBitmap.Attribute("ItemName").Value.ToUpper(), xBitmap.Attribute("BitIndex").Value);
                         }
 
                         foreach (XElement xBitmap in element.Elements(xNs + "Enumeration"))
                         {
-                            hwiUserTypeList[typeName].TryAdd(xBitmap.Attribute("Enumerator").Value, xBitmap.Attribute("EValue").Value);
+                            hwiUserTypeList[typeName].TryAdd(xBitmap.Attribute("Enumerator").Value.ToUpper(), xBitmap.Attribute("EValue").Value);
                         }
 
                         foreach (XElement xBitmap in element.Elements(xNs + "Pattern"))
