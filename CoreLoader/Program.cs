@@ -19,17 +19,21 @@ namespace CoreLoader
             string clid = args[2];
             string dataConnectionString = connectionString;
             string OID = args[3];
-            if (args.Count() > 4)
-                dataConnectionString = args[4];
+            string cfg = args[4];
+            if (args.Count() > 5)
+                dataConnectionString = args[5];
 
+
+            var ClidDic = cfg.Split(';').ToDictionary(a => a.Split(',')[0], a => a.Split(',')[1]);
 
             var nodes = LoadExistingNodes(connectionString, clid);
 
             foreach (var item in Directory.GetFiles(workingPath).Where(a => a.EndsWith(".response.success.txt")))
             {
-                Match fileNameRegex = Regex.Match(item, @"TYPE=(?<TYPE>.+?)\+NE=(?<NE>.+?)\+TIMESTAMP=(?<TIMESTAMP>.+?)\+MML=(?<MML>.+)");
+                Match fileNameRegex = Regex.Match(item, @"TYPE=(?<TYPE>.+?)\+NE=(?<NE>.+?)\+TIMESTAMP=(?<TIMESTAMP>.+?)\+MML=(?<MML>.+?)\.response");
                 string node = fileNameRegex.Groups["NE"].Value;
                 string datetimestr = fileNameRegex.Groups["TIMESTAMP"].Value;
+                string MML = fileNameRegex.Groups["MML"].Value;
                 var datetime = new DateTime(int.Parse(datetimestr.Substring(0, 4)), int.Parse(datetimestr.Substring(4, 2)), int.Parse(datetimestr.Substring(6, 2)),
                     int.Parse(datetimestr.Substring(9, 2)), int.Parse(datetimestr.Substring(11, 2)), int.Parse(datetimestr.Substring(13, 2)));
 
@@ -61,7 +65,7 @@ namespace CoreLoader
 
                             string clobValue = File.ReadAllText(item);
 
-                            cmd2.Parameters[":P0"].Value = clid;
+                            cmd2.Parameters[":P0"].Value = ClidDic[MML];
                             cmd2.Parameters[":P1"].Value = clid;
                             cmd2.Parameters[":P2"].Value = nodes[node].ToString();
                             cmd2.Parameters[":P3"].Value = "";
@@ -98,7 +102,7 @@ namespace CoreLoader
         }
 
 
-        private static Dictionary<string, int> LoadExistingNodes(string connectionString, string clid)      
+        private static Dictionary<string, int> LoadExistingNodes(string connectionString, string clid)
         {
             using (OracleConnection con = new OracleConnection(connectionString))
             {

@@ -56,7 +56,7 @@ namespace GExportToKVP
                 //    existingAtt.Add(item.Key);
 
 
-                foreach (var item in mocs[this.Name].Attributes.Where(a => a.Value.IsKeyAttribute == true))
+                foreach (var item in mocs[this.Name.ToUpper()].Attributes.Where(a => a.Value.IsKeyAttribute == true))
                 {
                     if (parameters.ContainsKey(item.Key))
                         if (!existingAtt.Contains(item.Key))

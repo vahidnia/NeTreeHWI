@@ -88,7 +88,10 @@ namespace GExportToKVP
                                     if (className.ToUpper() == "NBIOTCELL")
                                         classNameInt = "CELL";
 
-                                    var model = models.Values.Where(a => a.DisplayVersion == version && a.NeTypeName == mainClassName).FirstOrDefault(a => a.Mocs.ContainsKey(classNameInt));
+                                    var model = models.Values.Where(a => a.DisplayVersion == version && string.Equals(a.NeTypeName, mainClassName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault(a => a.Mocs.ContainsKey(classNameInt));
+                                    if (model == null)
+                                        model = models.Values.Where(a => a.DisplayVersion == version).FirstOrDefault(a => a.Mocs.ContainsKey(classNameInt));
+
 
                                     if (model != null)
                                     {

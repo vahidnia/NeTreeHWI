@@ -2,7 +2,7 @@
   "profiles": {
     "HuaweiModelParser": {
       "commandName": "Project",
-      "commandLineArgs": "d:\\Develop\\cm\\_20201112_00\\HWI_SU_OSSID-425+GExport_GZPHR01_10.194.14.128_20201112000800.xml.gz C:\\Users\\vahid.nia\\source\\repos\\NeTreeHWI\\HuaweiModelParser\\bin\\Release\\netcoreapp3.1\\publish"
+      "commandLineArgs": "d:\\Develop\\cm\\node\\GExport_ERPHR01_10.174.52.221_20201120003750.xml.gz  C:\\Users\\vahid.nia\\source\\repos\\NeTreeHWI\\HuaweiModelParser\\bin\\Release\\netcoreapp3.1\\publish"
     }
   }
 }

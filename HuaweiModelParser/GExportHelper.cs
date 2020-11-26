@@ -131,7 +131,7 @@ namespace HuaweiModelParser
                                     KeyValuePair<string, string> moidPart;
                                     if (keyAttr.Mandatory && keyAttr.AttrName != "IDTYPE")
                                     {
-                                        moidPart = parameters.Where(o => string.Equals(o.Key, keyAttr.AttrName)).Single();
+                                        moidPart = parameters.Where(o => string.Equals(o.Key, keyAttr.AttrName)).SingleOrDefault();
                                     }
                                     else
                                     {
