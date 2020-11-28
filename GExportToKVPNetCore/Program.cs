@@ -22,7 +22,6 @@ namespace GExportToKVP
             }
 
 
-            var NEList = new List<string> { "ERPHB02", "DBPHR09", "MLYPHB3", "MLYPHB4", "KYSPHR1", "LFSHR01", "LFSHR02", "GZPHBH2", "SAMPHB3", "TRPHB01", "YEPHR01", "YEPHR03", "YEPHR05", "YEPHR06", "YEPHR10", "YEPHB10", "KYSPHR2", "KYSPHR4", "GZPHRH2", "GZPHRH3", "GZPHB02", "DBPHB03", "YEPHB01", "YEPHB03", "GZPHR01", "GZPHR02", "GZPHR03", "GZPHRH1", "GZPHBH1", "YEPHR02", "YEPHR04", "YEPHB05", "BSKPHR9", "SOPHB05", "KTPHB02", "LFSHB01", "LFSHB02", "KTPHR06", "TRPHB06", "MOB84", "SOBCHB2", "KYSPHB6", "TRPHB05", "KYSPHR8", "SAMPHB2", "YEPHB04", "SOPHR04", "SAMPHR1", "SAMPHR2", "SAMPHR3", "IMPHB04", "SOPHB03", "BSKPHB2", "IMPHRM1", "IMPHBM1", "KYSPHR5", "SAMPHR4", "BSKPHB1", "SOPHB02", "IMPHB02", "KTPHB01", "SAMPHB4", "IMPHRM2", "TRPHB07", "BSKPHB8", "SOPHB06", "KYSPHB1", "SAMPHB1", "ERPHR04", "TRPHR08", "ERPHR05", "ERPHR01", "TRPHR05", "ERPHR03", "BSKPHB9", "BSKHB10", "BSKHR10", "BDPHB02", "MLYPHR2", "BSKPHR1", "BSKPHR2", "BSKPHR3", "BSKPHR4", "BSKPHR5", "BSKPHR6", "BSKPHR7", "BSKPHR8", "SOPHR01", "SOPHR02", "SOPHR03", "DBPHR01", "DBPHR02", "DBPHR06", "DBPHR03", "DBPHR04", "KTPHB03", "VAPHB02", "VAPHR01", "VAPHR02", "VAPHR03", "TRPHR06", "TRPHR07", "KTPHB04", "ANPHR01", "ANPHR02", "ANPHR03", "ANPHB01", "ANPHB02", "SOPHR06", "SOPHR05", "BSKHB11", "BSKHR11", "IMPHR05", "IMPHR06", "IMPHR07", "IMPHR08", "KYSPHB5", "TRPHB09", "DBPHR07", "VAPHB04", "BSKPHB3", "SOPHB04", "KYSPHR7", "MLYPHR4", "KYSPHB2", "KYSPHB3", "DBPHR08", "VAPHR04", "MLYPHR3", "VAPHR05", "TRPHR04", "BDPHB01", "DBPHR05", "ERPHB05", "KTPHR01", "KTPHR02", "KTPHR03", "BDPHR01", "BDPHR02", "BDPHR03", "BDPHR04", "BDPHR05", "KTPHR04", "KTPHR05", "KTPHR07", "DBPHB02", "MLYPHB1", "DBPHB06", "DBPHB07", "KYSPHR6", "TRPHB03", "IMPHRM3", "IMPHR11", "IMPHB11", "IMPHBM2", "IMPHR09", "IMPHR10", "IMPHB05", "GZPHB01", "BSKPHB4", "KYSPHB9", "DBPHB08", "IMPHR03", "IMPHR04", "IMPHB03", "BSKPHB7", "SOPHB01", "ERPHB01", "BSKPHB5", "BSKPHB6", "IMPHR01", "IMPHR02", "IMPHB01", "YEPHB02", "DBPHB09", "DBPHB10" };
             string sourcePath = "";
             string sourceFileMask = "";
             string dbFilePath = "";
@@ -64,7 +63,6 @@ namespace GExportToKVP
 
             List<string> fileList = new List<string>();
             if (sourceFileMask == "*.sqlite")
-                //    fileList = Directory.GetFiles(sourcePath, sourceFileMask).ToList();
                 fileList = new DirectoryInfo(sourcePath)
                                .GetFiles("*.sqlite", SearchOption.AllDirectories)
                                .Where(a => (DateTime.Now - a.LastWriteTime).TotalMinutes > 15)
@@ -72,7 +70,7 @@ namespace GExportToKVP
                                .ToList();
 
             else
-                fileList = Directory.GetFiles(sourcePath, sourceFileMask).Where(a => !NEList.Any(b => a.Contains(b))).ToList();
+                fileList = Directory.GetFiles(sourcePath, sourceFileMask).Where(a => !a.Contains("+NETYPE=BSC")).ToList();
             if (fileList.Count() == 0)
             {
                 Console.WriteLine($"{DateTime.Now} no file to process {sourcePath}");
@@ -152,7 +150,7 @@ namespace GExportToKVP
 
                             foreach (var item in result)
                                 streamWriter[0].Write(datedatetime + "\t" + ossid + "\t" + item + "\n");
-                          
+
                             File.Delete(fileName);
                         }
                         else
@@ -166,7 +164,7 @@ namespace GExportToKVP
                         string fileDestincation = Path.Combine(moveTo, Path.GetFileName(filePath));
                         if (File.Exists(fileDestincation))
                             File.Delete(fileDestincation);
-                        File.Move(filePath, fileDestincation);                    
+                        File.Move(filePath, fileDestincation);
                     }
                     catch (Exception ex)
                     {
