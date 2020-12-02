@@ -318,7 +318,7 @@ namespace HuaweiModelParser
                 raw.sqlite3_bind_text(insertVsCmTreeStmt, 3, string.Empty);
                 raw.sqlite3_bind_text(insertVsCmTreeStmt, 4, rootMo.moType + "=" + rootMo.ne);
                 raw.sqlite3_bind_text(insertVsCmTreeStmt, 5, rootMo.ne);
-                raw.sqlite3_bind_text(insertVsCmTreeStmt, 6, string.Empty);
+                raw.sqlite3_bind_text(insertVsCmTreeStmt, 6, rootMo.moType + "=" + rootMo.ne);
                 raw.sqlite3_bind_text(insertVsCmTreeStmt, 7, rootMo.moType);
                 raw.sqlite3_bind_null(insertVsCmTreeStmt, 8);
                 raw.sqlite3_bind_null(insertVsCmTreeStmt, 9);
