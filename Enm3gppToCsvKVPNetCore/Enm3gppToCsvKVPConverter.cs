@@ -207,11 +207,12 @@ namespace Enm3gppToCsvKVPNetCore
                             string pimoname = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + xmlReader.LocalName + "=" + xmlReader.GetAttribute("id");
                             string displayvsmoname = xmlReader.LocalName + "=" + xmlReader.GetAttribute("id");
                             string moname = xmlReader.LocalName + "=" + xmlReader.GetAttribute("id");
-
-                            // cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
-                            streamWriter[1].Write(string.Join("\t", fileDateTime, ossid, netopologyfolder, vsDataType, level++, parent, pimoname, displayvsmoname, string.Empty, moname));
-                            streamWriter[1].Write("\n");
-
+                            if (!string.IsNullOrWhiteSpace(netopologyfolder))
+                            {
+                                // cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
+                                streamWriter[1].Write(string.Join("\t", fileDateTime, ossid, netopologyfolder, vsDataType, level++, parent, pimoname, displayvsmoname, string.Empty, moname));
+                                streamWriter[1].Write("\n");
+                            }
                             parent = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + xmlReader.LocalName + "=" + xmlReader.GetAttribute("id");
                         }
                         else
@@ -291,16 +292,19 @@ namespace Enm3gppToCsvKVPNetCore
                 string displayvsmoname = currentObjectType + "=" + id;
                 string netopologyfolder = string.Join("→", ossPrefixes.Take(ossPrefixes.Count - 1).Select(o => $"{o.Key}={o.Value}"));
                 string vsDataType = currentObjectType;
+                if (!string.IsNullOrWhiteSpace(netopologyfolder))
+                {
+                    // cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
+                    streamWriter[1].Write(string.Join("\t", fileDateTime, ossid, netopologyfolder, vsDataType, level++, parent, pimoname, displayvsmoname, string.Empty, moname));
+                    streamWriter[1].Write("\n");
 
-                // cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
-                streamWriter[1].Write(string.Join("\t", fileDateTime, ossid, netopologyfolder, vsDataType, level++, parent, pimoname, displayvsmoname, string.Empty, moname));
-                streamWriter[1].Write("\n");
 
+
+                    //cmdata => {datadatetime},{ossid},{vsmoname},{pimoname},{motype},{paramname},{paramvalue}
+                    streamWriter[0].Write(string.Join("\t", fileDateTime, ossid, moname, pimoname, "ManagedElement", "pifiller-k", "pifiller-v"));
+                    streamWriter[0].Write("\n");
+                }
                 parent = string.Join("→", ossPrefixes.Select(o => $"{o.Key}={o.Value}")) + "→" + displayvsmoname;
-
-                //cmdata => {datadatetime},{ossid},{vsmoname},{pimoname},{motype},{paramname},{paramvalue}
-                streamWriter[0].Write(string.Join("\t", fileDateTime, ossid, moname, pimoname, "ManagedElement", "pifiller-k", "pifiller-v"));
-                streamWriter[0].Write("\n");
 
             }
 
@@ -463,13 +467,16 @@ namespace Enm3gppToCsvKVPNetCore
             string displayvsmoname = string.Join(",", path.Last().Key + "=" + path.Last().Value);
             string netopologyfolder = string.Join("→", ossPrefixes.Take(ossPrefixes.Count - 1).Select(o => $"{o.Key}={o.Value}"));
 
-            // cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
-            streamWriter[1].Write(string.Join("\t", fileDateTime, ossid, netopologyfolder, vsDataType, level, parent, pimoname, displayvsmoname, currentObjectFullType, moname));
-            streamWriter[1].Write("\n");
+            if (!string.IsNullOrWhiteSpace(netopologyfolder))
+            {
+                // cmtree => {0-datadatetime},{1-ossid},{2-netopologyfolder},{3-treeelementclass},{4-treedepth},{5-parentpimoname},{6-pimoname},{7-displayvsmoname},{8-motype},{9-vsmoname}
+                streamWriter[1].Write(string.Join("\t", fileDateTime, ossid, netopologyfolder, vsDataType, level, parent, pimoname, displayvsmoname, currentObjectFullType, moname));
+                streamWriter[1].Write("\n");
 
 
-            streamWriter[0].Write(string.Join("\t", fileDateTime, ossid, moname, pimoname, currentObjectFullType, "pifiller-k", "pifiller-v"));
-            streamWriter[0].Write("\n");
+                streamWriter[0].Write(string.Join("\t", fileDateTime, ossid, moname, pimoname, currentObjectFullType, "pifiller-k", "pifiller-v"));
+                streamWriter[0].Write("\n");
+            }
 
             foreach (KeyValuePair<string, string> attribute in currentObjectAttributes)
             {

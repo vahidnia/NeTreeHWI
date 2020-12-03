@@ -18,25 +18,29 @@ namespace Enm3gppToCsvKVPNetCore
             var log = new LoggerConfiguration()
                  .WriteTo.File("enm2kvp.log").WriteTo.Console()
                  .CreateLogger();
-          
-            
+
+
             Stopwatch sw = new Stopwatch();
             sw.Start();
             string source = "";
             string target = "";
             string model = "";
+            Console.WriteLine($"Args count {args.Length}");
             if (args.Length == 1)
             {
                 source = args[0];
+                Console.WriteLine(Path.GetDirectoryName(source));
+                Console.WriteLine(Directory.GetParent(Path.GetDirectoryName(source)).FullName);
                 target = Path.Combine(Directory.GetParent(Path.GetDirectoryName(source)).FullName, "cooked", Path.GetFileNameWithoutExtension(source) + ".csv");
-                var CurrentDirectory = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                //var CurrentDirectory = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                string CurrentDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
                 model = Path.Combine(CurrentDirectory, "model");
             }
             else if (args.Length == 2)
             {
                 source = args[0];
                 target = args[1];
-                var CurrentDirectory = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                string CurrentDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
                 model = Path.Combine(CurrentDirectory, "model");
             }
             else if (args.Length == 3)
