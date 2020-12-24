@@ -123,13 +123,11 @@ namespace GExportToKVP
                                                 {
                                                     if (model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.Count > 0)
                                                     {
-                                                        var pv = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.FirstOrDefault(a => a.name == parameter.Value);
-                                                        if (pv == null)
-                                                        {
-                                                            paramValue = parameter.Value;
-                                                        }
-                                                        else
-                                                            paramValue = pv.Value;
+                                                        paramValue = parameter.Value;
+                                                        //enum conversion comented out
+                                                        //var pv = model.ExternalTypesEnums[att.ExternalRef].ExternalTypesEnumItemList.FirstOrDefault(a => a.name == parameter.Value);
+                                                        //if (pv != null)
+                                                        //    paramValue = pv.Value;
                                                     }
                                                     else
                                                     {
