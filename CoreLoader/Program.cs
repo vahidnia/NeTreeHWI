@@ -54,12 +54,12 @@ namespace CoreLoader
                             cmd2.Parameters.Add(":P3", OracleDbType.Varchar2, 255);
                             cmd2.Parameters.Add(":P4", OracleDbType.Varchar2, 255);
                             cmd2.Parameters.Add(":P5", OracleDbType.Varchar2, 255);
-                            cmd2.Parameters.Add(":P6", OracleDbType.Clob, 1000000000);
+                            cmd2.Parameters.Add(":P6", OracleDbType.Clob, int.MaxValue);
                             cmd2.Parameters.Add(":P7", OracleDbType.TimeStamp, 255);
                             cmd2.Parameters.Add(":P8", OracleDbType.TimeStamp, 255);
 
                             //cmd.Parameters.Add(":P3", OracleDbType.Decimal, 10);
-                            ///cmd.Parameters.Add(":P4", OracleDbType.Clob, 100000);
+                            //cmd.Parameters.Add(":P4", OracleDbType.Clob, 100000);
 
                             cmd2.Prepare();
 
