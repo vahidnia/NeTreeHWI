@@ -214,6 +214,7 @@ namespace HuaweiModelParser
                 // convert temp tables to final tables
                 //raw.sqlite3_exec(db, $"CREATE INDEX ix_{tempParamTableName} on {tempParamTableName}(NE,MOTYPE,MOID)");
                 raw.sqlite3_exec(db, $"CREATE INDEX ix_{tempTreeTableName} on {tempTreeTableName}(NE,MOTYPE,MOIDORDERED)");
+                raw.sqlite3_exec(db, $"CREATE INDEX ix_{tempTreeTableName} on {tempTreeTableName}(NE,MOTYPE,MOIDFORJOIN)");
                 raw.sqlite3_exec(db, "analyze");
             }
             else
@@ -229,7 +230,8 @@ namespace HuaweiModelParser
             raw.sqlite3_exec(db, "BEGIN TRANSACTION");
             raw.sqlite3_prepare_v2(db, "INSERT INTO vs_cm_tree VALUES(?,?,?,?,?,?,?,?,?,?)", out sqlite3_stmt insertVsCmTreeStmt);
             raw.sqlite3_prepare_v2(db, $"SELECT * FROM {tempTreeTableName}", out sqlite3_stmt selectTempTreeRecordStmt);
-            raw.sqlite3_prepare_v2(db, $"SELECT * FROM {tempTreeTableName} WHERE NE=? AND MOTYPE=? and MOIDORDERED=?", out sqlite3_stmt searchTempTreeRecordStmt);
+            raw.sqlite3_prepare_v2(db, $"SELECT * FROM {tempTreeTableName} WHERE NE=? AND MOTYPE=? and MOIDORDERED=?", out sqlite3_stmt searchTempTreeRecordStmt_MOIDORDERED);
+            raw.sqlite3_prepare_v2(db, $"SELECT * FROM {tempTreeTableName} WHERE NE=? AND MOTYPE=? and MOIDFORJOIN=?", out sqlite3_stmt searchTempTreeRecordStmt_MOIDFORJOIN);
             while (raw.sqlite3_step(selectTempTreeRecordStmt) == raw.SQLITE_ROW)
             {
                 string ne = raw.sqlite3_column_text(selectTempTreeRecordStmt, 0).utf8_to_string();
@@ -249,28 +251,51 @@ namespace HuaweiModelParser
 
                 while (true)
                 {
-                    raw.sqlite3_bind_text(searchTempTreeRecordStmt, 1, ne);
-                    raw.sqlite3_bind_text(searchTempTreeRecordStmt, 2, parentMoType);
-                    raw.sqlite3_bind_text(searchTempTreeRecordStmt, 3, parentMoId);
-                    bool parentIsFound = raw.sqlite3_step(searchTempTreeRecordStmt) == raw.SQLITE_ROW;
+                    raw.sqlite3_bind_text(searchTempTreeRecordStmt_MOIDORDERED, 1, ne);
+                    raw.sqlite3_bind_text(searchTempTreeRecordStmt_MOIDORDERED, 2, parentMoType);
+                    raw.sqlite3_bind_text(searchTempTreeRecordStmt_MOIDORDERED, 3, parentMoId);
+                    bool parentIsFound = raw.sqlite3_step(searchTempTreeRecordStmt_MOIDORDERED) == raw.SQLITE_ROW;
                     if (parentIsFound)
                     {
-                        ne = raw.sqlite3_column_text(searchTempTreeRecordStmt, 0).utf8_to_string();
-                        moType = raw.sqlite3_column_text(searchTempTreeRecordStmt, 1).utf8_to_string();
-                        moId = raw.sqlite3_column_text(searchTempTreeRecordStmt, 2).utf8_to_string();
-                        parentMoType = raw.sqlite3_column_text(searchTempTreeRecordStmt, 3).utf8_to_string();
-                        parentMoId = raw.sqlite3_column_text(searchTempTreeRecordStmt, 4).utf8_to_string();
-                        moIdOrdered = raw.sqlite3_column_text(searchTempTreeRecordStmt, 5).utf8_to_string();
-                        moIdOrderedFiltered = raw.sqlite3_column_text(searchTempTreeRecordStmt, 6).utf8_to_string();
+                        ne = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDORDERED, 0).utf8_to_string();
+                        moType = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDORDERED, 1).utf8_to_string();
+                        moId = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDORDERED, 2).utf8_to_string();
+                        parentMoType = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDORDERED, 3).utf8_to_string();
+                        parentMoId = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDORDERED, 4).utf8_to_string();
+                        moIdOrdered = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDORDERED, 5).utf8_to_string();
+                        moIdOrderedFiltered = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDORDERED, 6).utf8_to_string();
                         moIdForJoin = raw.sqlite3_column_text(selectTempTreeRecordStmt, 7).utf8_to_string();
                         parentMoIdForJoin = raw.sqlite3_column_text(selectTempTreeRecordStmt, 8).utf8_to_string();
                         path.Add((ne, moType, moId, parentMoType, parentMoId, moIdOrdered, moIdOrderedFiltered, moIdForJoin, parentMoIdForJoin));
-                        raw.sqlite3_reset(searchTempTreeRecordStmt);
+                        raw.sqlite3_reset(searchTempTreeRecordStmt_MOIDORDERED);
                     }
                     else
                     {
-                        raw.sqlite3_reset(searchTempTreeRecordStmt);
-                        break;
+                        raw.sqlite3_reset(searchTempTreeRecordStmt_MOIDORDERED);
+
+                        raw.sqlite3_bind_text(searchTempTreeRecordStmt_MOIDFORJOIN, 1, ne);
+                        raw.sqlite3_bind_text(searchTempTreeRecordStmt_MOIDFORJOIN, 2, parentMoType);
+                        raw.sqlite3_bind_text(searchTempTreeRecordStmt_MOIDFORJOIN, 3, parentMoId);
+                        parentIsFound = raw.sqlite3_step(searchTempTreeRecordStmt_MOIDFORJOIN) == raw.SQLITE_ROW;
+                        if (parentIsFound)
+                        {
+                            ne = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDFORJOIN, 0).utf8_to_string();
+                            moType = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDFORJOIN, 1).utf8_to_string();
+                            moId = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDFORJOIN, 2).utf8_to_string();
+                            parentMoType = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDFORJOIN, 3).utf8_to_string();
+                            parentMoId = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDFORJOIN, 4).utf8_to_string();
+                            moIdOrdered = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDFORJOIN, 5).utf8_to_string();
+                            moIdOrderedFiltered = raw.sqlite3_column_text(searchTempTreeRecordStmt_MOIDFORJOIN, 6).utf8_to_string();
+                            moIdForJoin = raw.sqlite3_column_text(selectTempTreeRecordStmt, 7).utf8_to_string();
+                            parentMoIdForJoin = raw.sqlite3_column_text(selectTempTreeRecordStmt, 8).utf8_to_string();
+                            path.Add((ne, moType, moId, parentMoType, parentMoId, moIdOrdered, moIdOrderedFiltered, moIdForJoin, parentMoIdForJoin));
+                            raw.sqlite3_reset(searchTempTreeRecordStmt_MOIDFORJOIN);
+                        }
+                        else
+                        {
+                            raw.sqlite3_reset(searchTempTreeRecordStmt_MOIDFORJOIN);
+                            break;
+                        }
                     }
                 }
 
@@ -314,7 +339,7 @@ namespace HuaweiModelParser
                 raw.sqlite3_reset(insertVsCmTreeStmt);
             }
             foreach (var rootMo in rootMos) // TODO: validate that there is only single root mo type
-            {      
+            {
                 raw.sqlite3_bind_text(insertVsCmTreeStmt, 1, rootMo.moType);
                 raw.sqlite3_bind_int(insertVsCmTreeStmt, 2, 1);
                 raw.sqlite3_bind_text(insertVsCmTreeStmt, 3, string.Empty);
@@ -330,7 +355,8 @@ namespace HuaweiModelParser
             }
             raw.sqlite3_finalize(insertVsCmTreeStmt);
             raw.sqlite3_finalize(selectTempTreeRecordStmt);
-            raw.sqlite3_finalize(searchTempTreeRecordStmt);
+            raw.sqlite3_finalize(searchTempTreeRecordStmt_MOIDFORJOIN);
+            raw.sqlite3_finalize(searchTempTreeRecordStmt_MOIDORDERED);
             raw.sqlite3_exec(db, "COMMIT");
 
             // populate vs_cm_data
