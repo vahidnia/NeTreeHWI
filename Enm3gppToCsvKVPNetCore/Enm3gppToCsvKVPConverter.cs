@@ -91,8 +91,8 @@ namespace Enm3gppToCsvKVPNetCore
                 FileStream dataFileStream = File.Create(dataFilePath + ".gz");
                 FileStream treeFileStream = File.Create(treeFilePath + ".gz");
 
-                GZipStream compressData = new GZipStream(dataFileStream, CompressionMode.Compress);
-                GZipStream compressTree = new GZipStream(treeFileStream, CompressionMode.Compress);
+                GZipStream compressData = new GZipStream(dataFileStream, CompressionLevel.Fastest);
+                GZipStream compressTree = new GZipStream(treeFileStream, CompressionLevel.Fastest);
 
                 streamWriter.Add(new StreamWriter(compressData));
                 streamWriter.Add(new StreamWriter(compressTree));
