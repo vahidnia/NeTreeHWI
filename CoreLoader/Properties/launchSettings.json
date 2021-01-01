@@ -2,7 +2,7 @@
   "profiles": {
     "CoreLoader": {
       "commandName": "Project",
-      "commandLineArgs": "\"Data Source=devdb.piworks.net/DEV;User Id=MNP_CMDEV_TCPOM;Password=mnp;Validate Connection=true;\"    C:\\Users\\vahid.nia\\Downloads\\ericsson.msc.success.sample.20201123\\success  50008 28601    MGISP.IMSIS=ALL,50012;ANGSP.DSO=ALL,50014;ANASP.A=ALL,50013;PNBSP.BO=ALL,50015 \"Data Source=devdb.piworks.net/DEV;User Id=MNP_CMDEV;Password=mnp;Validate Connection=true;\""
+      "commandLineArgs": " \"Data Source=devdb.piworks.net/DEV;User Id=MNP_CMDEV_TCPOM;Password=mnp;Validate Connection=true;\"  d:\\Develop\\cm\\FileBase\\ 50013 28601 \"(?<=\\d+\\.).+?$\""
     }
   }
 }
