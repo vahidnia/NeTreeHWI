@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -114,7 +115,7 @@ namespace GExportToKVP
                         {
                             using (FileStream compressedStream = File.OpenRead(filePath))
                             {
-                                using (Stream stream = new ICSharpCode.SharpZipLib.GZip.GZipInputStream(compressedStream))
+                                using (GZipStream stream = new GZipStream(compressedStream, CompressionLevel.Fastest))
                                 {
                                     GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, model, nodeList, dateTime, ossid);
                                 }
