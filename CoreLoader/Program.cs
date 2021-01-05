@@ -172,22 +172,22 @@ namespace CoreLoader
                 con.Open();
                 Assert.IsNotNull(con);
 
-
-                //string commandText = @"INSERT INTO CNFX_TXTCM_CONFIG (CONFIGID, CLID, CONFIGDISPLAYNAME) VALUES (:P0, :P1, :P2, :P3, TO_CLOB(:P4))";
-                string commandText = @"INSERT INTO CNFX_TXTCM_CONFIG (CONFIGID,CONFIGDISPLAYNAME,CLID) VALUES (:P0, :P1, :P2)";
+                //CONFIGFULLNAME
+                string commandText = @"INSERT INTO CNFX_TXTCM_CONFIG (CONFIGID,CONFIGDISPLAYNAME,CLID,CONFIGFULLNAME) VALUES (:P0, :P1, :P2, :P3)";
 
                 using (OracleCommand cmd = new OracleCommand(commandText, con))
                 {
                     cmd.Parameters.Add(":P0", OracleDbType.Decimal, 10);
                     cmd.Parameters.Add(":P1", OracleDbType.Varchar2, 200);
                     cmd.Parameters.Add(":P2", OracleDbType.Decimal, 10);
-
+                    cmd.Parameters.Add(":P3", OracleDbType.Varchar2, 200);
 
                     cmd.Prepare();
 
                     cmd.Parameters[":P0"].Value = newId;
                     cmd.Parameters[":P1"].Value = node;
                     cmd.Parameters[":P2"].Value = clid;
+                    cmd.Parameters[":P3"].Value = node;
 
                     cmd.ExecuteNonQuery();
                 }
@@ -204,7 +204,7 @@ namespace CoreLoader
                 con.Open();
                 Assert.IsNotNull(con);
 
-                string commandText = $"SELECT  CONFIGDISPLAYNAME,CONFIGID  FROM CNFX_TXTCM_CONFIG  WHERE CLID  = {clid}";
+                string commandText = $"SELECT  CONFIGFULLNAME,CONFIGID  FROM CNFX_TXTCM_CONFIG  WHERE CLID  = {clid}";
                 Dictionary<string, int> configs = new Dictionary<string, int>();
 
 
@@ -265,7 +265,6 @@ namespace CoreLoader
                 loCmd.CommandText = "select CUST_ALL_CORE_NES_SEQ.NEXTVAL from dual";
                 long NodeID = Convert.ToInt64(loCmd.ExecuteScalar());
 
-                //string commandText = @"INSERT INTO CNFX_TXTCM_CONFIG (CONFIGID, CLID, CONFIGDISPLAYNAME) VALUES (:P0, :P1, :P2, :P3, TO_CLOB(:P4))";
                 string commandText = @"INSERT INTO CUST_ALL_CORE_NES (OID,NODEID,NENAME,CLID,NEID) VALUES (:P0, :P1, :P2, :P3, :P4)";
 
                 using (OracleCommand cmd = new OracleCommand(commandText, con))
