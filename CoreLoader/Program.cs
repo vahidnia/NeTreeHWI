@@ -28,7 +28,14 @@ namespace CoreLoader
             var configs = LoadExistingConfig(connectionString, clid);
             Console.WriteLine($"node loaded {nodes.Count}");
 
-            foreach (var item in Directory.GetFiles(workingPath))
+            var fileList = new DirectoryInfo(workingPath)
+                          .GetFiles("*.*", SearchOption.TopDirectoryOnly)
+                          .Where(a => (DateTime.Now - a.LastWriteTime).TotalMinutes > 10)
+                          .Select(a => a.FullName)
+                          .ToList();
+
+
+            foreach (var item in fileList)
             {
                 try
                 {

@@ -115,7 +115,7 @@ namespace GExportToKVP
                         {
                             using (FileStream compressedStream = File.OpenRead(filePath))
                             {
-                                using (GZipStream stream = new GZipStream(compressedStream, CompressionLevel.Fastest))
+                                using (GZipStream stream = new GZipStream(compressedStream, CompressionMode.Decompress))
                                 {
                                     GExportToKVPConverter.Convert(stream, dbFilePath, ne, true, streamWriter, model, nodeList, dateTime, ossid);
                                 }
@@ -152,7 +152,6 @@ namespace GExportToKVP
                             foreach (var item in result)
                                 streamWriter[0].Write(datedatetime + "\t" + ossid + "\t" + item + "\n");
 
-                            File.Delete(fileName);
                         }
                         else
                         {
@@ -165,7 +164,8 @@ namespace GExportToKVP
                         string fileDestincation = Path.Combine(moveTo, Path.GetFileName(filePath));
                         if (File.Exists(fileDestincation))
                             File.Delete(fileDestincation);
-                        File.Move(filePath, fileDestincation);
+                        if (!fileName.EndsWith(".sqlite"))
+                            File.Move(filePath, fileDestincation);
                     }
                     catch (Exception ex)
                     {
