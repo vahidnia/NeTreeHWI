@@ -164,8 +164,17 @@ namespace GExportToKVP
                         string fileDestincation = Path.Combine(moveTo, Path.GetFileName(filePath));
                         if (File.Exists(fileDestincation))
                             File.Delete(fileDestincation);
+
                         if (!fileName.EndsWith(".sqlite"))
+                        {
                             File.Move(filePath, fileDestincation);
+                            Console.WriteLine($"file {filePath} moved to {fileDestincation}");
+                        }
+                        else
+                        {
+                            File.Delete(filePath);
+                            Console.WriteLine($"file {filePath} deleted");
+                        }
                     }
                     catch (Exception ex)
                     {

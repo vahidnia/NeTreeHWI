@@ -2,7 +2,7 @@
   "profiles": {
     "CoreLoader": {
       "commandName": "Project",
-      "commandLineArgs": " \"Data Source=devdb.piworks.net/DEV;User Id=MNP_CMDEV_TCPOM;Password=mnp;Validate Connection=true;\"  d:\\Develop\\cm\\FileBase\\ 50013 28601 \"(?<=\\d+\\.).+?$\""
+      "commandLineArgs": " \"Data Source=devdb.piworks.net/DEV;User Id=MNP_CMDEV_TCPOM;Password=mnp;Validate Connection=true;\"  d:\\Develop\\cm\\FileBase\\ 50013 28601 \"~~vahid~nabid\""
     }
   }
 }

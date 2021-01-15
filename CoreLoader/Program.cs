@@ -19,10 +19,29 @@ namespace CoreLoader
             string clid = args[2];
             string dataConnectionString = connectionString;
             string OID = args[3];
-            string mmlPattern = "";
+            string regexOverride = "";
             if (args.Count() > 4)
-                mmlPattern = args[4];
+                regexOverride = args[4];
 
+            //regexOverride
+            //{0-mmlPattern},{1-filePattern},{2-datetimePattern}.{3-nePattern}
+            var OverrideArray = regexOverride.Split("~");
+            string mmlPattern = @"MML\s*=\s*(?<mml>.+?)($|\+|\.response)";
+            string filePattern = "";
+            string datetimePattern = @"(?<=TIMESTAMP=)\d+";
+            string nePattern = @"(?<=NE=)[^\+]+";
+
+            if (OverrideArray.Count() == 4)
+            {
+                if (!string.IsNullOrWhiteSpace(OverrideArray[0]))
+                    mmlPattern = OverrideArray[0];
+                if (!string.IsNullOrWhiteSpace(OverrideArray[1]))
+                    filePattern = OverrideArray[1];
+                if (!string.IsNullOrWhiteSpace(OverrideArray[2]))
+                    datetimePattern = OverrideArray[2];
+                if (!string.IsNullOrWhiteSpace(OverrideArray[3]))
+                    nePattern = OverrideArray[3];
+            }
 
             var nodes = LoadExistingNodes(connectionString, clid);
             var configs = LoadExistingConfig(connectionString, clid);
@@ -34,19 +53,22 @@ namespace CoreLoader
                           .Select(a => a.FullName)
                           .ToList();
 
+            if (!string.IsNullOrWhiteSpace(filePattern))
+                fileList = fileList.Where(a => Regex.Match(a, filePattern).Success).ToList();
 
             foreach (var item in fileList)
             {
                 try
                 {
                     Console.WriteLine(item);
-                    Match timestampMatch = Regex.Match(item, @"(?<=TIMESTAMP=)\d+");
+                    //Match timestampMatch = Regex.Match(item, @"(?<=TIMESTAMP=)\d+");
+                    Match timestampMatch = Regex.Match(item, datetimePattern);
                     string datetimestr = timestampMatch.Value;
 
-                    Match neMatch = Regex.Match(item, @"(?<=NE=)[^\+]+");
+                    Match neMatch = Regex.Match(item, nePattern);
                     string node = neMatch.Value;
 
-                    Match mmlMatch = Regex.Match(item, @"MML\s*=\s*(?<mml>.+?)($|\+|\.response)");
+                    Match mmlMatch = Regex.Match(item, mmlPattern);
                     if (!mmlMatch.Success)
                     {
                         Console.WriteLine($"Unable to process this file: {item}");
@@ -54,8 +76,7 @@ namespace CoreLoader
                         continue;
                     }
                     string MML = mmlMatch.Groups["mml"].Value;
-                    if (!string.IsNullOrWhiteSpace(mmlPattern))
-                        MML = Regex.Match(MML, mmlPattern).Value;
+                
 
                     // Match fileNameRegex = Regex.Match(item, @"TYPE=(?<TYPE>.+?)\+NE=(?<NE>.+?)\+TIMESTAMP=(?<TIMESTAMP>.+?)\+MML=(?<MML>.+?)\.response");
                     // string node = fileNameRegex.Groups["NE"].Value;
