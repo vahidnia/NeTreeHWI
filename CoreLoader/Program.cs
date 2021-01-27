@@ -28,8 +28,9 @@ namespace CoreLoader
             var OverrideArray = regexOverride.Split("~");
             string mmlPattern = @"MML\s*=\s*(?<mml>.+?)($|\+|\.response)";
             string filePattern = "";
-            string datetimePattern = @"(?<=TIMESTAMP=)\d+";
+            string datetimePattern = @"(?<=TIMESTAMP=)\d+(\.\d\d\d\d\d\d)*";
             string nePattern = @"(?<=NE=)[^\+]+";
+            string pathPattern = @"(?<=PATH=)\w+";
 
             if (OverrideArray.Count() == 4)
             {
@@ -76,8 +77,9 @@ namespace CoreLoader
                         continue;
                     }
                     string MML = mmlMatch.Groups["mml"].Value;
-                
 
+                    string path = Regex.Match(item, pathPattern).Success ? Regex.Match(item, pathPattern).Value + "_" : "";
+                    MML = path + MML;
                     // Match fileNameRegex = Regex.Match(item, @"TYPE=(?<TYPE>.+?)\+NE=(?<NE>.+?)\+TIMESTAMP=(?<TIMESTAMP>.+?)\+MML=(?<MML>.+?)\.response");
                     // string node = fileNameRegex.Groups["NE"].Value;
                     // string datetimestr = fileNameRegex.Groups["TIMESTAMP"].Value;
