@@ -50,7 +50,7 @@ namespace CoreLoader
 
             var fileList = new DirectoryInfo(workingPath)
                           .GetFiles("*.*", SearchOption.TopDirectoryOnly)
-                          .Where(a => (DateTime.Now - a.LastWriteTime).TotalMinutes > 10)
+                          .Where(a => (DateTime.Now - a.LastWriteTime).TotalMinutes > 1)
                           .Select(a => a.FullName)
                           .ToList();
 
@@ -64,7 +64,7 @@ namespace CoreLoader
                     Console.WriteLine(item);
                     //Match timestampMatch = Regex.Match(item, @"(?<=TIMESTAMP=)\d+");
                     Match timestampMatch = Regex.Match(item, datetimePattern);
-                    string datetimestr = timestampMatch.Value;
+                    string datetimestr = timestampMatch.Value.Replace("-", "");
 
                     Match neMatch = Regex.Match(item, nePattern);
                     string node = neMatch.Value;

@@ -457,12 +457,13 @@ namespace Enm3gppToCsvKVPNetCore
 
             string currentObjectFullType = string.Join(",", path.Select(o => o.Key));
             string ossPrefix = string.Join(",", ossPrefixes.Select(o => $"{o.Key}={o.Value}"));
-            string monamet = string.Join(",", path.Select(o => o.Key + "=" + o.Value));
-            string moname = $"{ossPrefixes[ossPrefixes.Count - 1].Key}={ossPrefixes[ossPrefixes.Count - 1].Value},{string.Join(",", path.Select(o => o.Key + "=" + o.Value))}";
-            string pimoname = monamet.Replace(',', '→');
+            string moname = string.Join(",", path.Select(o => o.Key + "=" + o.Value));
+            string pimoname = moname.Replace(',', '→');
             if (!string.IsNullOrEmpty(ossPrefix))
+            {
                 pimoname = string.Join("→", ossPrefix.Replace(',', '→'), pimoname);
-
+                moname = string.Join(",", ossPrefix, moname);
+            }
 
             string displayvsmoname = string.Join(",", path.Last().Key + "=" + path.Last().Value);
             string netopologyfolder = string.Join("→", ossPrefixes.Take(ossPrefixes.Count - 1).Select(o => $"{o.Key}={o.Value}"));
